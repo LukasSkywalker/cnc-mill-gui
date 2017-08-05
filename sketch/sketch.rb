@@ -28,6 +28,7 @@ class Sketch
   def simulate
     @tool.reset
     pdf = Prawn::Document.new
+    pdf.stroke_axis(at: [100, 100], height: 200, step_length: 50, negative_axes_length: 200, color: '0000FF')
     @commands.each { |c| c.to_prawn(pdf) }
     pdf.render_file("output.pdf")
   end
