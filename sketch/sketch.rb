@@ -27,9 +27,19 @@ class Sketch
 
   def simulate
     @tool.reset
-    pdf = Prawn::Document.new
-    pdf.stroke_axis(at: [100, 100], height: 200, step_length: 50, negative_axes_length: 200, color: '0000FF')
-    @commands.each { |c| c.to_prawn(pdf) }
+    pdf = Prawn::Document.new(page_layout: :landscape, margin: 0)
+    height = pdf.bounds.top_left.last - pdf.bounds.bottom_left.last
+    width = pdf.bounds.top_right.first - pdf.bounds.top_left.first
+    puts height
+    puts width
+    pdf.bounding_box([width / 2, height], width: width / 2, height: height / 2) do
+      puts pdf.bounds.absolute_bottom
+      pdf.stroke
+      pdf.stroke_axis(height: width/2, negative_axes_length: width/2, negative_step_length: 100)
+      @commands.each { |c| c.to_prawn(pdf) }
+      pdf.line([0, 0], [100, 100])
+      pdf.stroke
+    end
     pdf.render_file("output.pdf")
   end
 
