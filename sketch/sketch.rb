@@ -14,7 +14,7 @@ class Sketch
 
   def debug
     commands = @commands.reduce([]) { |a,c| a.concat(Array(c.to_gcode(@tool)))}
-    commands.flatten.reject(&:empty?).compact.inspect
+    commands.flatten.reject(&:empty?).compact.join("\n")
   end
 
   def run

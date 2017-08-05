@@ -7,6 +7,7 @@ class Positioning < Command
   end
 
   def to_gcode(tool)
+    tool.update_position(@x, @y)
     [tool.off, sprintf("G01 X#{FMT} Y#{FMT}", @x, @y)]
   end
 

@@ -7,6 +7,7 @@ class LineTo < Command
   end
 
   def to_gcode(tool)
+    tool.update_position(@x, @y)
     [tool.on, sprintf("G01 X#{FMT} Y#{FMT}", @x, @y)]
   end
 
