@@ -1,3 +1,7 @@
+def require_all(except)
+  Dir.glob('*.rb').reject{|f| f == except }.each { |f| require_relative f }
+end
+
 class Sketch
   def initialize(tool)
     @tool = tool
