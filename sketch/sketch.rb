@@ -1,3 +1,5 @@
+require 'prawn'
+
 def require_all(except)
   Dir.glob('*.rb').reject{|f| f == except }.each { |f| require_relative f }
 end
@@ -13,16 +15,21 @@ class Sketch
   end
 
   def debug
+    @tool.reset
     commands = @commands.reduce([]) { |a,c| a.concat(Array(c.to_gcode(@tool)))}
     commands.flatten.reject(&:empty?).compact.join("\n")
   end
 
   def run
+    @tool.reset
     #@commands.map(&:to_gcode(@tool))
   end
 
   def simulate
-    #@commands.map(&:to_prawn)
+    @tool.reset
+    pdf = Prawn::Document.new
+    @commands.each { |c| c.to_prawn(pdf) }
+    pdf.render_file("output.pdf")
   end
 
   def print

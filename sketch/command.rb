@@ -6,7 +6,7 @@ class Command
   def to_gcode(tool)
     raise StandardError, 'Subclasses must implement this'
   end
-  def to_prawn
+  def to_prawn(pdf)
     raise StandardError, 'Subclasses must implement this'
   end
   def to_s(tool)

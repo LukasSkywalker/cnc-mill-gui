@@ -11,7 +11,7 @@ class LineTo < Command
     [tool.on, sprintf("G01 X#{FMT} Y#{FMT}", @x, @y)]
   end
 
-  def to_prawn
-
+  def to_prawn(pdf)
+    pdf.text "LINETO"
   end
 end

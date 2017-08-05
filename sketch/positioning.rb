@@ -11,7 +11,7 @@ class Positioning < Command
     [tool.off, sprintf("G01 X#{FMT} Y#{FMT}", @x, @y)]
   end
 
-  def to_prawn
-
+  def to_prawn(pdf)
+    pdf.text "POSITIONING"
   end
 end

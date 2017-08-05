@@ -12,3 +12,4 @@ s << Arc.new([20,0],180, Arc::CLOCKWISE)
 s << Arc.new([20,0],180, Arc::COUNTER_CLOCKWISE)
 # s << Arc.new(1,2,3,4,5)
 puts s.debug
+s.simulate
