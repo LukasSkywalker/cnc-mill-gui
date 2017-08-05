@@ -45,7 +45,7 @@ class Arc < Command
       (0..@angle).step(PRECISION_DEG) do |d|
         cos = radius*Math.cos(d)
         sin = radius*Math.sin(d)
-        pos = pos.zip([cos,sin]).map{|v1,v2| v1+v2}
+        pos = @center.zip([cos,sin]).map{|v1,v2| v1+v2}
         pdf.line_to(*pos)
       end
       # pdf.line_to(*end_point)
