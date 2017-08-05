@@ -6,6 +6,8 @@ class Arc < Command
   CLOCKWISE = 'G02'
   COUNTER_CLOCKWISE = 'G03'
 
+  PRECISION_DEG = 5
+
   def initialize(center=[0,0], angle= 360, dir= CLOCKWISE)
     @center = center
     @angle = angle/180.0*Math::PI
@@ -28,11 +30,25 @@ class Arc < Command
     rel_center = @center.zip(tool.status.position).map{ |v1,v2| v1-v2 }
     end_point = get_end_point(tool.status.position)
     puts rel_center.inspect
-    tool.update_position(end_point[0],end_point[1])
+    tool.update_position(*end_point)
     sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)
   end
 
-  def to_prawn(pdf)
-    pdf.text "ARC"
+  def to_prawn(tool,pdf)
+    end_point = get_end_point(tool.status.position)
+    pos = tool.status.position
+    radius = Math.sqrt(@center.zip(pos).map{|v1,v2| v1-v2}.reduce([]){|n,e| n + e**2})
+    pdf.stroke do
+      (0..@angle).step(PRECISION_DEG) do |d|
+        d = d / 180.0 * Math::PI
+        cos = radius*Math.cos(d)
+        sin = radius*Math.sin(d)
+        pos = pos.zip([cos,sin]).map{|v1,v2| v1+v2}
+          pdf.line_to(*pos)
+        end
+      end
+      pdf.line_to(*end_point)
+    end
+    tool.update_position(*end_point)
   end
 end
