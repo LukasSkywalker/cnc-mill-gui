@@ -32,7 +32,7 @@ class Arc < Command
     sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)
   end
 
-  def to_prawn(pdf)
+  def to_prawn(tool, pdf)
     pdf.text "ARC"
   end
 end

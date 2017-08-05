@@ -9,7 +9,7 @@ class Pause < Command
     "G04 P#{@duration}"
   end
 
-  def to_prawn(pdf)
+  def to_prawn(tool, pdf)
     pdf.text "PAUSE"
   end
 end
