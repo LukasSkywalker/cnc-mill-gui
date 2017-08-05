@@ -5,7 +5,7 @@ class Tool
   attr_reader :status
   
   def initialize
-    @status = Status.new(on: false, position: [0.0,0.0])
+    @status = Status.new(on: false, position: [0.0,0.0], bounding_box: [0,0,0,0])
   end
 
   def reset
@@ -13,12 +13,15 @@ class Tool
   end
 
   def update_position(x,y)
+    update_bounding_box(x,y)
     @status.position = [x,y]
   end
 
-  def shift_position(shift_x, shift_y)
-    pos = @status.position
-    @status.position = [pos[0]+shift_x,pos[1]+shift_y]
+  def update_bounding_box(x,y)
+    @status.bounding_box[0] = x if @status.bounding_box[0] > x
+    @status.bounding_box[1] = y if @status.bounding_box[1] > y
+    @status.bounding_box[2] = x if @status.bounding_box[2] < x
+    @status.bounding_box[3] = y if @status.bounding_box[3] < y
   end
 
   def on
