@@ -1,10 +1,15 @@
+#!/usr/bin/env ruby
 require_relative 'serial'
 
+stdin = ARGF.read
 filename = ARGV[0]
 
-puts "Running #{filename}"
+if filename
+  content = File.read(filename)
+end
 
-content = File.read(filename)
-code = content.split("\n")
+input = stdin || content
+
+code = input.split("\n")
 
 run_program(code)
