@@ -36,9 +36,8 @@ class Sketch
       puts pdf.bounds.absolute_bottom
       pdf.stroke
       pdf.stroke_axis(height: width/2, negative_axes_length: width/2, negative_step_length: 100)
+      pdf.move_to 0, 0
       @commands.each { |c| c.to_prawn(@tool, pdf) }
-      pdf.line([0, 0], [100, 100])
-      pdf.stroke
     end
     pdf.render_file("output.pdf")
   end

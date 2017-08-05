@@ -34,6 +34,7 @@ class Arc < Command
     sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)
   end
 
+<<<<<<< HEAD
   def to_prawn(tool,pdf)
     end_point = get_end_point(tool.status.position)
     pos = tool.status.position
@@ -50,5 +51,9 @@ class Arc < Command
       pdf.line_to(*end_point)
     end
     tool.update_position(*end_point)
+=======
+  def to_prawn(tool, pdf)
+    pdf.text "ARC"
+>>>>>>> 382bc6468b9f71fb59c81906c8c261309a188d31
   end
 end
