@@ -35,9 +35,9 @@ class Sketch
     pdf.bounding_box([width / 2, height], width: width / 2, height: height / 2) do
       puts pdf.bounds.absolute_bottom
       pdf.stroke
-      pdf.stroke_axis(height: width/2, negative_axes_length: width/2, negative_step_length: 100)
-      pdf.move_to 0, 0
+      pdf.stroke_axis(height: width/2, negative_axes_length: width/2, step_length: 20)
       @commands.each { |c| c.to_prawn(@tool, pdf) }
+      pdf.stroke
     end
     pdf.render_file("output.pdf")
   end

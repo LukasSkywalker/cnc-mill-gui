@@ -6,10 +6,11 @@ class Arc < Command
   CLOCKWISE = 'G02'
   COUNTER_CLOCKWISE = 'G03'
 
-  PRECISION_DEG = 5 / 180.0 * Math::PI
+  PRECISION_RAD = 1 / 180.0 * Math::PI
 
-  def initialize(center=[0,0], angle= 360, dir= CLOCKWISE)
+  def initialize(center=[0,0], angle= 360, dir= CLOCKWISE, is_center_relative = false)
     @center = center
+    @is_center_relative = is_center_relative
     @angle = angle/180.0*Math::PI
     @dir = dir
   end
@@ -17,40 +18,73 @@ class Arc < Command
   def get_end_point(start_point)
     cos = Math.cos(@angle)
     sin = Math.sin(@angle)
-    x,y = start_point.zip(@center).map{ |v1,v2| v1-v2 }
+    x,y = get_relative_center(start_point)
+    puts [x,y].inspect
     if @dir==CLOCKWISE
       pos_offset = [cos*x+sin*y, cos*y-sin*x]
     elsif @dir==COUNTER_CLOCKWISE
       pos_offset = [cos*x-sin*y, cos*y+sin*x]
     end
-    pos_offset.zip(@center).map{ |v1,v2| v1+v2 }
+    pos_offset.zip(get_absolute_center(start_point)).map{ |v1,v2| v2-v1 }
   end
 
   def to_gcode(tool)
-    rel_center = @center.zip(tool.status.position).map{ |v1,v2| v1-v2 }
+    rel_center = get_relative_center(tool.status.position)
     end_point = get_end_point(tool.status.position)
-    puts rel_center.inspect
     tool.update_position(*end_point)
     sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)
   end
 
   def to_prawn(tool,pdf)
-    pdf.text "ARC #{@center} #{@angle} #{@dir}"
+    # pdf.text "ARC #{@center} #{@is_center_relative} #{@angle} #{@dir}"
     end_point = get_end_point(tool.status.position)
     pos = tool.status.position
-    radius = Math.sqrt(@center.zip(pos).map{|v1,v2| v1-v2}.reduce(0){|n,e| n + e**2})
+    abs_center = get_absolute_center(pos)
+    radius = vec_norm(get_relative_center(pos))
     pdf.stroke do
-      pdf.stroke_color 'ff0000'
-      pdf.move_to pos.first, pos.last
-      (0..@angle).step(PRECISION_DEG) do |d|
+      pdf.move_to(*pos)
+      pdf.stroke_color '0000ff'
+      angle_offset = get_angle_offset(get_relative_center(pos))
+      (0..@angle).step(PRECISION_RAD) do |d|
+        d = @dir==CLOCKWISE ? angle_offset-d : angle_offset+d
         cos = radius*Math.cos(d)
         sin = radius*Math.sin(d)
-        pos = @center.zip([cos,sin]).map{|v1,v2| v1+v2}
+        pos = abs_center.zip([cos,sin]).map{ |v1,v2| v1+v2 }
         pdf.line_to(*pos)
       end
-      # pdf.line_to(*end_point)
-      pdf.stroke
+      pdf.line_to(*end_point)
     end
     tool.update_position(*end_point)
   end
+
+  def get_relative_center(position)
+    return @center if @is_center_relative
+    @center.zip(position).map{ |v1,v2| v1-v2 }
+  end
+
+  def get_absolute_center(position)
+    return @center.zip(position).map{ |v1,v2| v1+v2 } if @is_center_relative
+    @center
+  end
+
+  def get_angle_offset(dir_vec)
+    dir_vec = normalized_vec(dir_vec)
+    offset = sign(dir_vec[1])*Math.acos(dir_vec[0])
+    offset+Math::PI
+  end
+
+  def sign(num)
+    return -1 if num<0 
+    1
+  end
+
+  def normalized_vec(vec)
+    len = vec_norm(vec)
+    vec.map{ |v| v/len }
+  end
+
+  def vec_norm(vec)
+    Math.sqrt(vec.reduce(0){ |n,v| n+v**2 })
+  end
+
 end

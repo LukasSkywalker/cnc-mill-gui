@@ -1,21 +1,29 @@
 require_relative 'command'
 
 class Positioning < Command
-  def initialize(x, y)
+  def initialize(x, y, is_relative = false)
     @x = x
     @y = y
+    @is_relative = is_relative
   end
 
   def to_gcode(tool)
-    tool.update_position(@x, @y)
-    [tool.off, sprintf("G01 X#{FMT} Y#{FMT}", @x, @y)]
+    x,y = get_pos(tool)
+    tool.update_position(x, y)
+    [tool.off, sprintf("G01 X#{FMT} Y#{FMT}", x, y)]
   end
 
   def to_prawn(tool, pdf)
-    pdf.text "POS #{@x} #{@y}"
+    x,y = get_pos(tool)
+    pdf.text "POS #{x} #{y}"
     pdf.stroke_color 'cccccc'
-    pdf.line [tool.status.position.first, tool.status.position.last], [@x, @y]
+    pdf.line(tool.status.position, [x, y])
     pdf.stroke
-    tool.update_position(@x, @y)
+    tool.update_position(x, y)
+  end
+
+  def get_pos(tool)
+    return [@x,@y].zip(tool.status.position).map{ |x,y| x + y } if @is_relative
+    [@x,@y]
   end
 end
