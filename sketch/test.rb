@@ -28,5 +28,9 @@ s << Positioning.new(90, -10)
 s << Arc.new([-10,10],90, Arc::CLOCKWISE, relative)
 s << Positioning.new(-60, 0)
 s << Polygon.new([-60,0],[-60,-50],[-30,-80],[-10,0],[-20,40],[-40,100],[-30,120],[0,0])
+(-100..0).step(10).each do |y|
+  s<<Positioning.new(0,y)
+  s << Polygon.new([-90,-300],[-50,-50],[-180,50],[-200,0],relative)
+end
 puts s.debug
 s.simulate

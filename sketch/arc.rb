@@ -8,9 +8,9 @@ class Arc < Command
 
   PRECISION_RAD = 1 / 180.0 * Math::PI
 
-  def initialize(center=[0,0], angle= 360, dir= CLOCKWISE, is_center_relative = false)
+  def initialize(center=[0,0], angle= 360, dir= CLOCKWISE, is_relative = false)
     @center = center
-    @is_center_relative = is_center_relative
+    @is_relative = is_relative
     @angle = angle/180.0*Math::PI
     @dir = dir
   end
@@ -36,7 +36,7 @@ class Arc < Command
   end
 
   def to_prawn(tool,pdf)
-    # pdf.text "ARC #{@center} #{@is_center_relative} #{@angle} #{@dir}"
+    # pdf.text "ARC #{@center} #{@is_relative} #{@angle} #{@dir}"
     end_point = get_end_point(tool.status.position)
     pos = tool.status.position
     abs_center = get_absolute_center(pos)
@@ -58,12 +58,12 @@ class Arc < Command
   end
 
   def get_relative_center(position)
-    return @center if @is_center_relative
+    return @center if @is_relative
     @center.zip(position).map{ |v1,v2| v1-v2 }
   end
 
   def get_absolute_center(position)
-    return @center.zip(position).map{ |v1,v2| v1+v2 } if @is_center_relative
+    return @center.zip(position).map{ |v1,v2| v1+v2 } if @is_relative
     @center
   end
 
