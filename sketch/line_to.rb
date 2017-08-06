@@ -15,7 +15,7 @@ class LineTo < Command
 
   def to_prawn(tool, pdf)
     x,y = get_pos(tool)
-    pdf.text "LINE #{x} #{y}"
+    # pdf.text "LINE #{x} #{y}"
     pdf.stroke_color '000000'
     pdf.line(tool.status.position, [x, y])
     pdf.stroke

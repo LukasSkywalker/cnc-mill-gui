@@ -15,7 +15,7 @@ class Positioning < Command
 
   def to_prawn(tool, pdf)
     x,y = get_pos(tool)
-    pdf.text "POS #{x} #{y}"
+    # pdf.text "POS #{x} #{y}"
     pdf.stroke_color 'cccccc'
     pdf.line(tool.status.position, [x, y])
     pdf.stroke
