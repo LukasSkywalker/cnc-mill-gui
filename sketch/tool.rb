@@ -2,11 +2,10 @@ require_relative 'status'
 
 class Tool
   VERTICAL_OFFSET = 3
-  attr_reader :status, :is_relative
+  attr_reader :status
   
   def initialize
     @status = Status.new(on: false, position: [0.0,0.0], bounding_box: [0,0,0,0])
-    @is_relative = false
   end
 
   def reset

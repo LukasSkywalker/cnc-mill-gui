@@ -30,10 +30,7 @@ class Sketch
     pdf = Prawn::Document.new(page_layout: :landscape, margin: 0)
     height = pdf.bounds.top_left.last - pdf.bounds.bottom_left.last
     width = pdf.bounds.top_right.first - pdf.bounds.top_left.first
-    puts height
-    puts width
     pdf.bounding_box([width / 2, height], width: width / 2, height: height / 2) do
-      puts pdf.bounds.absolute_bottom
       pdf.stroke
       pdf.stroke_axis(height: width/2, negative_axes_length: width/2, step_length: 20)
       @commands.each { |c| c.to_prawn(@tool, pdf) }

@@ -3,7 +3,7 @@ require 'beziercurve'
 
 class Polygon < Command
 
-  PRECISION = 0.1
+  PRECISION = 5
 
   def initialize(*control_points)
     super()
@@ -11,8 +11,6 @@ class Polygon < Command
       @is_relative = control_points.last
       control_points.delete_at(control_points.length-1)
     end
-    puts @is_relative.inspect
-    puts control_points.last.class
     @control_points = control_points
   end
 
@@ -41,8 +39,7 @@ class Polygon < Command
 
   def get_bezier_points(control_points)
     polygon = Bezier::Curve.new(*control_points)
-    df = polygon.controlpoints.last.to_a.zip(polygon.controlpoints.first.to_a).map{|v1,v2| v1-v2}
-    dist = Math.sqrt(df.reduce(0){|n,v| n + v**2})
+    dist = get_path_length(control_points)
     bezier_points = []
     (0..1).step(PRECISION/dist.to_f).each do |p|
       bezier_points << polygon.point_on_curve(p).to_a
@@ -56,6 +53,16 @@ class Polygon < Command
     @control_points.insert(0,[0.0,0.0]) if @is_relative && @control_points.first !=[0,0]
     return @control_points.map{|xd,yd| [xd+tool.status.position.first, yd+tool.status.position.last]} if @is_relative
     @control_points
+  end
+
+  def get_path_length(bezier_points)
+    length = 0
+    last = bezier_points.first
+    bezier_points.each do |p|
+      length += Math.sqrt(last.zip(p).map{|v1,v2| v1-v2 }.reduce(0){|n,v| n + v*v})
+      last = p
+    end
+    length
   end
 
 end

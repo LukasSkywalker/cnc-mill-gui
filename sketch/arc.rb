@@ -19,7 +19,6 @@ class Arc < Command
     cos = Math.cos(@angle)
     sin = Math.sin(@angle)
     x,y = get_relative_center(start_point)
-    puts [x,y].inspect
     if @dir==CLOCKWISE
       pos_offset = [cos*x+sin*y, cos*y-sin*x]
     elsif @dir==COUNTER_CLOCKWISE
