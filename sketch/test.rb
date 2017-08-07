@@ -18,6 +18,7 @@ s << Positioning.new(0, 0)
     s << Arc.new([x,y],230, Arc::CLOCKWISE)
   end
 end
+
 s << Positioning.new(60, 0)
 s << Arc.new([20,0],180, Arc::CLOCKWISE, Command::RELATIVE)
 s << Arc.new([20,0],180, Arc::COUNTER_CLOCKWISE, Command::RELATIVE)
@@ -31,5 +32,6 @@ s << Polygon.new([-60,0],[-60,-50],[-30,-80],[-10,0],[-20,40],[-40,100],[-30,120
   s << Positioning.new(0,y)
   s << Polygon.new([-90,-300],[-50,-50],[-180,50],[-200,0], Command::RELATIVE)
 end
+
 puts s.debug
 s.simulate

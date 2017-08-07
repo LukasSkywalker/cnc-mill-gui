@@ -5,6 +5,9 @@ def require_all(except)
 end
 
 class Sketch
+  MAX_WIDTH = 280
+  MAX_HEIGHT = 180
+
   def initialize(tool)
     @tool = tool
     @commands = []
@@ -31,7 +34,8 @@ class Sketch
     height = pdf.bounds.top_left.last - pdf.bounds.bottom_left.last
     width = pdf.bounds.top_right.first - pdf.bounds.top_left.first
     pdf.bounding_box([width / 2, height], width: width / 2, height: height / 2) do
-      pdf.stroke
+      draw_bounds(pdf)
+      pdf.stroke_color '000000'
       pdf.stroke_axis(height: width/2, negative_axes_length: width/2, step_length: 20)
       @commands.each { |c| c.to_prawn(@tool, pdf) }
       pdf.stroke
@@ -41,5 +45,13 @@ class Sketch
 
   def print
     File.write('output.gcode', @commands.map(&:to_s).join("\n"))
+  end
+
+  private
+
+  def draw_bounds(pdf)
+    pdf.stroke_color '00ffff'
+    pdf.rectangle([-MAX_WIDTH / 2, MAX_HEIGHT / 2], MAX_WIDTH, MAX_HEIGHT)
+    pdf.stroke
   end
 end
