@@ -24,8 +24,10 @@ class LineTo < Command
 
 
   def get_pos(tool)
-    return [@x,@y].zip(tool.status.position).map{ |x,y| x + y } if @is_relative
-    [@x,@y]
+    if @is_relative
+      [tool.position.first + @x, tool.position.last + @y]
+    else
+      [@x, @y]
+    end
   end
-
 end
