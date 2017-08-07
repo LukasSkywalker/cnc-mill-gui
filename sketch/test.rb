@@ -1,7 +1,6 @@
 require_relative 'sketch'
 require_all(__FILE__)
 
-relative = true
 s = Sketch.new(Laser.new)
 s << Positioning.new(10, 10)
 s << LineTo.new(20, 30)
@@ -29,7 +28,7 @@ s << Arc.new([-10,10],90, Arc::CLOCKWISE, Command::RELATIVE)
 s << Positioning.new(-60, 0)
 s << Polygon.new([-60,0],[-60,-50],[-30,-80],[-10,0],[-20,40],[-40,100],[-30,120],[0,0])
 (-100..0).step(10).each do |y|
-  s<<Positioning.new(0,y)
+  s << Positioning.new(0,y)
   s << Polygon.new([-90,-300],[-50,-50],[-180,50],[-200,0], Command::RELATIVE)
 end
 puts s.debug

@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    beziercurve (0.8.4)
     pdf-core (0.7.0)
     prawn (2.2.2)
       pdf-core (~> 0.7.0)
@@ -11,6 +12,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  beziercurve
   prawn
 
 BUNDLED WITH

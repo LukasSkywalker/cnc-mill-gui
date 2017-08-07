@@ -10,7 +10,6 @@ class Pause < Command
   end
 
   def to_prawn(tool, pdf)
-    pdf.text "PAUSE"
     tool.update_position(*tool.status.position)
   end
 end

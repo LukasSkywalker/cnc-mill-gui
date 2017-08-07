@@ -15,7 +15,6 @@ class Positioning < Command
 
   def to_prawn(tool, pdf)
     x,y = get_pos(tool)
-    # pdf.text "POS #{x} #{y}"
     pdf.stroke_color 'cccccc'
     pdf.line(tool.status.position, [x, y])
     pdf.stroke
@@ -23,7 +22,10 @@ class Positioning < Command
   end
 
   def get_pos(tool)
-    return [@x,@y].zip(tool.status.position).map{ |x,y| x + y } if @is_relative
-    [@x,@y]
+    if @is_relative
+      return [tool.position.first + @x, tool.position.last + @y]
+    else
+      [@x, @y]
+    end
   end
 end

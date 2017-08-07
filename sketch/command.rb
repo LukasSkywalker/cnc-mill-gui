@@ -2,11 +2,9 @@ class Command
   attr_reader :is_relative
 
   RELATIVE = true
-  AVSOLUTE = false
+  ABSOLUTE = false
 
   FMT = "%0.5f"
-  @@laser = false
-  @@inking = true
 
   def initialize
     @is_relative = false
