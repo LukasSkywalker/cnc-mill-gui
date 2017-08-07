@@ -8,6 +8,10 @@ class Tool
     @status = Status.new(on: false, position: [0.0,0.0], bounding_box: [0,0,0,0])
   end
 
+  def position
+    @status.position
+  end
+
   def reset
     update_position(0.0,0.0)
   end
