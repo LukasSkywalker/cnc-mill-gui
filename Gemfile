@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
 gem 'prawn'
-gem 'beziercurve'
+gem 'beziercurve', github: 'LukasSkywalker/beziercurve'

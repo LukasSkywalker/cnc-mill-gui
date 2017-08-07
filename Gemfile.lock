@@ -1,7 +1,12 @@
+GIT
+  remote: git://github.com/LukasSkywalker/beziercurve.git
+  revision: 55a5f120f415849d9805d11fa51a8196674595e7
+  specs:
+    beziercurve (0.8.4)
+
 GEM
   remote: https://rubygems.org/
   specs:
-    beziercurve (0.8.4)
     pdf-core (0.7.0)
     prawn (2.2.2)
       pdf-core (~> 0.7.0)
@@ -12,7 +17,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  beziercurve
+  beziercurve!
   prawn
 
 BUNDLED WITH
