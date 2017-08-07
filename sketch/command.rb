@@ -1,6 +1,9 @@
 class Command
   attr_reader :is_relative
 
+  RELATIVE = true
+  AVSOLUTE = false
+
   FMT = "%0.5f"
   @@laser = false
   @@inking = true
