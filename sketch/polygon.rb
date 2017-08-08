@@ -21,7 +21,7 @@ class Polygon < Command
   def to_gcode(tool)
     bezier_points = get_bezier_points(get_absolute_controlpoints(tool))
     tool.update_position(*bezier_points.last)
-    bezier_points.map{|p| sprintf("G01 X#{FMT} Y#{FMT}",*p)}.join("\n")
+    [tool.on] + bezier_points.map{|p| sprintf("G01 X#{FMT} Y#{FMT}",*p)}
   end
 
   def to_prawn(tool, pdf)

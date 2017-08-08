@@ -1,7 +1,7 @@
 require_relative '../sketch'
 require_all(__FILE__)
 
-SCALE = 0.5
+SCALE = 0.38
 LEFT = -1
 RIGHT = 1
 
@@ -10,7 +10,6 @@ def scale(*data)
   data.map do |d|
     if d.is_a?(Array)
       s = scale(*d)
-      puts s.inspect
       s
     else
       d*SCALE
@@ -50,11 +49,11 @@ def body(sketch, center_top_x=0.0,center_top_y=0.0)
   sketch << Polygon.new(*scale([-300,-20],*multiply([-420,0],2),[-449,27]),Command::RELATIVE)
   sketch << Polygon.new([center_top_x-scale(35).first,center_top_y-scale(10).first],[center_top_x,center_top_y])
   # slit
-  (0..1).each do |yd|
+  (0..2).each do |yd|
     sketch << Positioning.new(center_top_x+scale(126).first,center_top_y-scale(35-yd).first)
     sketch << Polygon.new(*scale([25,13],[105,-2]),Command::RELATIVE)
   end
-  (0..1).each do |yd|
+  (0..2).each do |yd|
     sketch << Positioning.new(center_top_x+scale(398).first,center_top_y-scale(15-yd).first)
     sketch << LineTo.new(*scale(45,0),Command::RELATIVE)
   end
@@ -64,15 +63,24 @@ end
 
 s = Sketch.new(Laser.new(power: 1000))
 
+s << FeedRate.new(350)
+s << Pause.new(0)
+
+wing(s,*scale(0,140),RIGHT)
+wing(s,*scale(0,140),LEFT)
+heck(s,*scale(-160,55),RIGHT)
+heck(s,*scale(-160,55),LEFT)
+body(s,*scale(-240,-30))
+
+=begin
+s << Positioning.new(0, 54)
+s << LineTo.new(-5, 0, Command::RELATIVE)
+s << LineTo.new(10, 0, Command::RELATIVE)
+s << Positioning.new(0, 0)
+=end
+
 s << FeedRate.new(1000)
-wing(s,0,70,RIGHT)
-wing(s,0,70,LEFT)
-heck(s,-80,30,RIGHT)
-heck(s,-80,30,LEFT)
-body(s,-120,-10)
+s << Positioning.new(0, 0)
 
-
-
-
-s.simulate("#{__FILE__[0..-4]}.pdf")
-# s.run
+#s.simulate("#{__FILE__[0..-4]}.pdf")
+s.run
