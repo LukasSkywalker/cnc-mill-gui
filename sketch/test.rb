@@ -2,7 +2,7 @@ require_relative 'sketch'
 require_all(__FILE__)
 
 s = Sketch.new(Laser.new)
-=begin
+
 s << Positioning.new(10, 10)
 s << LineTo.new(20, 30)
 s << LineTo.new(50, 30)
@@ -33,12 +33,12 @@ s << Polygon.new([-60,0],[-60,-50],[-30,-80],[-10,0],[-20,40],[-40,100],[-30,120
   s << Positioning.new(0,y)
   s << Polygon.new([-90,-300],[-50,-50],[-180,50],[-200,0], Command::RELATIVE)
 end
-=end
-s << Letter.new('f', letter_size: 10)
-s << Letter.new('u', letter_size: 10)
-s << Letter.new('c', letter_size: 10)
-s << Letter.new('k', letter_size: 10)
 
-puts s.debug
+
+s << Positioning.new(-95, 0)
+
+('a'..'z').each do |letter|
+  s << Letter.new(letter, letter_size: 10)
+end
 
 s.simulate
