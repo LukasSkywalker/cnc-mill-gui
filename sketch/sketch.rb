@@ -2,7 +2,7 @@ require 'prawn'
 require_relative '../serial'
 
 def require_all(except)
-  Dir.glob('*.rb').reject{|f| f == except }.each { |f| require_relative f }
+  Dir.glob('*.rb').reject{|f| f == except || f == 'test.rb' }.each { |f| require_relative f }
 end
 
 class Sketch
