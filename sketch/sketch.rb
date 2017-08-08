@@ -29,7 +29,7 @@ class Sketch
   def run
     @tool.reset
     prog = @commands.reduce([]) { |a,c| a.concat(Array(c.to_gcode(@tool)))}.flatten.reject(&:empty?).compact
-    run_program([UNIT_MM] + prog)
+    run_program([UNIT_MM] + prog + [@tool.off])
   end
 
   def simulate
