@@ -32,7 +32,7 @@ class Sketch
     run_program([UNIT_MM] + prog)
   end
 
-  def simulate
+  def simulate(fname='output.pdf')
     @tool.reset
     pdf = Prawn::Document.new(page_layout: :landscape, margin: 0,:page_size => [1.2*MAX_HEIGHT,1.2*MAX_WIDTH])
     height = pdf.bounds.top_left.last - pdf.bounds.bottom_left.last
@@ -44,7 +44,7 @@ class Sketch
       @commands.each { |c| c.to_prawn(@tool, pdf) }
       pdf.stroke
     end
-    pdf.render_file("output.pdf")
+    pdf.render_file(fname)
   end
 
   def print
