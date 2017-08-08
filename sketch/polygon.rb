@@ -3,7 +3,7 @@ require 'beziercurve'
 
 class Polygon < Command
 
-  PRECISION = 5
+  PRECISION = 1
 
   def initialize(*control_points)
     super()

@@ -16,8 +16,12 @@ class Positioning < Command
   def to_prawn(tool, pdf)
     x,y = get_pos(tool)
     pdf.stroke_color 'cccccc'
+    pdf.line_width = 0.5
+    pdf.dash(2)
     pdf.line(tool.status.position, [x, y])
     pdf.stroke
+    pdf.undash
+    pdf.line_width = 1
     tool.update_position(x, y)
   end
 
