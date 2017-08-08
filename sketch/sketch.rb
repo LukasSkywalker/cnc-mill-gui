@@ -1,4 +1,5 @@
 require 'prawn'
+require_relative '../serial'
 
 def require_all(except)
   Dir.glob('*.rb').reject{|f| f == except }.each { |f| require_relative f }
@@ -7,6 +8,8 @@ end
 class Sketch
   MAX_WIDTH = 280
   MAX_HEIGHT = 180
+
+  UNIT_MM = "G21"
 
   def initialize(tool)
     @tool = tool
@@ -25,7 +28,8 @@ class Sketch
 
   def run
     @tool.reset
-    #@commands.map(&:to_gcode(@tool))
+    prog = @commands.reduce([]) { |a,c| a.concat(Array(c.to_gcode(@tool)))}.flatten.reject(&:empty?).compact
+    run_program([UNIT_MM] + prog)
   end
 
   def simulate

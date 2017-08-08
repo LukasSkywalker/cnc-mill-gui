@@ -10,7 +10,7 @@ class Positioning < Command
   def to_gcode(tool)
     x,y = get_pos(tool)
     tool.update_position(x, y)
-    [tool.off, sprintf("G01 X#{FMT} Y#{FMT}", x, y)]
+    [tool.off, sprintf("F1000 G01 X#{FMT} Y#{FMT}", x, y)]
   end
 
   def to_prawn(tool, pdf)
