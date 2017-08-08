@@ -30,7 +30,7 @@ class Sketch
 
   def simulate
     @tool.reset
-    pdf = Prawn::Document.new(page_layout: :landscape, margin: 0)
+    pdf = Prawn::Document.new(page_layout: :landscape, margin: 0,:page_size => [1.2*MAX_HEIGHT,1.2*MAX_WIDTH])
     height = pdf.bounds.top_left.last - pdf.bounds.bottom_left.last
     width = pdf.bounds.top_right.first - pdf.bounds.top_left.first
     pdf.bounding_box([width / 2, height], width: width / 2, height: height / 2) do
