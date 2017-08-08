@@ -6,4 +6,5 @@
 
 output.pdf
 *.pdf
+linecount.*
 .history
