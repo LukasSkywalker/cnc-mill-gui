@@ -9,7 +9,7 @@ def run_program(code)
       puts "> #{line}\n"
       sp.write("#{line}\n")
 
-      output = sp.gets.chomp
+      output = (sp.gets || '<none>').chomp
       puts "< #{output}"
     end
   end

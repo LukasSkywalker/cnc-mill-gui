@@ -17,7 +17,7 @@ class Laser < Tool
       @status.power_changed = false
       commands << "S#{@status.power}"
     end
-    commands << (@status.on! ? "M3" : "")
+    commands << (@status.on! ? "M4" : "")
   end
 
   def off

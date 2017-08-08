@@ -31,7 +31,7 @@ class Arc < Command
     rel_center = get_relative_center(tool.status.position)
     end_point = get_end_point(tool.status.position)
     tool.update_position(*end_point)
-    sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)
+    [tool.on, sprintf("%s X#{FMT}Y#{FMT} I#{FMT}J#{FMT}",@dir,*end_point,*rel_center)]
   end
 
   def to_prawn(tool,pdf)

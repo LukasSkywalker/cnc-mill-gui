@@ -2,7 +2,7 @@ require 'prawn'
 require_relative '../serial'
 
 def require_all(except)
-  Dir.glob('*.rb').reject{|f| f == except }.each { |f| require_relative f }
+  Dir.glob('*.rb').reject{|f| f == except || f == 'test.rb' }.each { |f| require_relative f }
 end
 
 class Sketch
@@ -29,7 +29,7 @@ class Sketch
   def run
     @tool.reset
     prog = @commands.reduce([]) { |a,c| a.concat(Array(c.to_gcode(@tool)))}.flatten.reject(&:empty?).compact
-    run_program([UNIT_MM] + prog)
+    run_program([UNIT_MM] + prog + [@tool.off])
   end
 
   def simulate(fname='output.pdf')
