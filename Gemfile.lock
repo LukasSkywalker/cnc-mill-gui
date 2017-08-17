@@ -7,6 +7,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    gosu (0.12.1)
     pdf-core (0.7.0)
     prawn (2.2.2)
       pdf-core (~> 0.7.0)
@@ -18,6 +19,7 @@ PLATFORMS
 
 DEPENDENCIES
   beziercurve!
+  gosu
   prawn
 
 BUNDLED WITH
