@@ -1,9 +1,10 @@
 class GosuObject
-  attr_accessor :name
+  attr_accessor :name, :onclick
 
   def initialize(name,left,bottom,right,top)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
+    @onclick = -> { }
   end
 
   def overlay?(x,y)
@@ -25,7 +26,7 @@ class WindowManager
     end
   end
 
-  def has_overlay?
+  def has_overlay?(x, y)
     keys = @objects.keys.sort.reverse
     keys.each do |k|
       @objects[k].each do |obj|
@@ -35,7 +36,7 @@ class WindowManager
     false
   end
 
-  def get_overlay_object
+  def get_overlay_object(x, y)
     keys = @objects.keys.sort.reverse
     keys.each do |k|
       @objects[k].each do |obj|
@@ -44,5 +45,4 @@ class WindowManager
     end
     nil
   end
-
 end

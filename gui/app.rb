@@ -8,6 +8,7 @@ class Tutorial < Gosu::Window
     self.caption = "Hack GUI"
     @drawing = false
     @paths = []
+    @first_frame = true
   end
   
   def update
@@ -15,8 +16,13 @@ class Tutorial < Gosu::Window
       @paths.last.points << Point.new(self.mouse_x, self.mouse_y)
     end
   end
+
+  def needs_redraw?
+    @drawing || @first_frame
+  end
   
   def draw
+    @first_frame = false
     Gosu.draw_rect(10, 10, 100, 100, Gosu::Color::GREEN)
 
     @paths.each do |path|
@@ -27,6 +33,7 @@ class Tutorial < Gosu::Window
   def button_down(id)
     case id
     when Gosu::MsLeft
+      #run_mouse_handler(id, :down)
       @drawing = true
       @paths << Path.new
     when Gosu::KbEscape
@@ -37,7 +44,15 @@ class Tutorial < Gosu::Window
   def button_up(id)
     case id
     when Gosu::MsLeft
+      #run_mouse_handler(id, :up)
       @drawing = false
+    end
+  end
+
+  def run_mouse_handler(id, direction)
+    object = get_overlay_object(self.mouse_x, self.mouse_y)
+    if object
+      object.onclick.call(self, id, direction)
     end
   end
 
