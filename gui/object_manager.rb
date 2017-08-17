@@ -1,21 +1,14 @@
-class GosuObject
-  attr_accessor :name, :onclick
-
-  def initialize(name,left,bottom,right,top)
-    @name = name
-    @left,@bottom,@right,@top = left,bottom,right,top
-    @onclick = -> { }
-    @onposition_update = -> { }
-  end
-
-  def overlay?(x,y)
-    (x>@left&&x<@right) && (y>bottom&&y<top)
-  end
-end
-
-class WindowManager
+class ObjectManager
   def initialize()
     @objects = {}
+  end
+
+  def update(x,y)
+    @objects.each do |k,objs|
+      objs.each do |obj|
+        obj.update(x,y)
+      end
+    end
   end
 
   def add(new_object, z=0)

@@ -2,25 +2,21 @@ module EventHandler
   @current_object = nil
 
   def set_current_object(current_object)
+    return until current_object
     @current_object = current_object
+    @current_object.activate
   end
 
   def unset_current_object
+    puts "unset"
+    @current_object.deactivate
     @current_object = nil
-  end
-
-  def position_update
-    if @current_object
-      @current_object.onposition_update.call(self.mouse_x,self.mouse_y)
-    end
   end
 
   def button_down(id)
     case id
     when Gosu::MsLeft
-      #run_mouse_handler(id, :down)
-      @drawing = true
-      @paths << Path.new
+      run_mouse_handler(id, :down)
     when Gosu::KbEscape
       self.close
     end
@@ -29,15 +25,19 @@ module EventHandler
   def button_up(id)
     case id
     when Gosu::MsLeft
-      #run_mouse_handler(id, :up)
-      @drawing = false
+      run_mouse_handler(id, :up)
     end
   end
 
   def run_mouse_handler(id, direction)
-    object = get_overlay_object(self.mouse_x, self.mouse_y)
-    if object
-      object.onclick.call(self, id, direction)
+    if !@current_object
+      set_current_object(@object_manager.get_overlay_object(self.mouse_x, self.mouse_y))
+      puts @current_object.inspect if @current_object
+    end
+    if @current_object
+      @current_object.onclick(id, direction)
+      puts @current_object.active?
+      unset_current_object if !@current_object.active?
     end
   end
 end
