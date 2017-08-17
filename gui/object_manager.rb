@@ -5,8 +5,13 @@ class ObjectManager
 
   def update(x,y)
     @objects.each do |k,objs|
+      to_delete = []
       objs.each do |obj|
         obj.update(x,y)
+        to_delete<<obj if obj.delete?
+      end
+      to_delete.each do |obj|
+        objs.delete(obj)
       end
     end
   end
@@ -18,6 +23,10 @@ class ObjectManager
     else
       @objects[z] = [new_object]
     end
+  end
+
+  def add_button(button)
+    add(button,-999)
   end
 
   def has_overlay?(x, y)

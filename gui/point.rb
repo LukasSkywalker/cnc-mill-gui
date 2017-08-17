@@ -16,18 +16,14 @@ class Point < GosuObject
   end
 
   def update(x,y)
-    case @state
-    when :on
+    if active?
       @x,@y = x,y
       @left,@bottom,@right,@top = get_border
-      `say waaaa`
-    when :off
-      @active = false;
     end
     draw
   end
 
   def draw
-    Gosu.draw_rect(x-SIZE,y-SIZE, 2*SIZE,2*SIZE, Gosu::Color::RED)
+    Gosu.draw_rect(@x-SIZE,@y-SIZE, 2*SIZE,2*SIZE, Gosu::Color::BLUE)
   end
 end

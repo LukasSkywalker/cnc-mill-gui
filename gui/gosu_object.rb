@@ -1,39 +1,62 @@
 class GosuObject
-  attr_accessor :name, :onclick, :active
+  attr_accessor :name, :onclick
+
+  UP = :up
+  DOWN = :down
+  LEFT = :left
+  RIGHT = :right
+  CHANGED = :changed
+  KEY = :key
+
 
   def initialize(name,left,bottom,right,top)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
-    @state = :off
-    @active = false
+    @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil}
+    @stop_request = false
   end
 
   def active?
-    @active
-  end
-
-  def activate
-    @active = true
-  end
-
-  def deactivate
-    @active = false
-  end
-
-  def onclick(id,direction)
-    case direction
-    when :down
-      @state = :on
-      activate
-    when :up
-      @state = :off
-      deactivate
+    if @stop_request
+      @stop_request = false
+      return false
     end
-    puts @state.inspect
-    puts direction
+    @state[LEFT]
   end
 
-  def update(board,x,y)
+  def delete?
+    @state[RIGHT] && @state[KEY].include?(:ctrl)
+  end
+
+  def stop
+    @stop_request = true
+  end
+
+  def onclick(id,state)
+    return handle_key(id,state) unless @state.has_key?(id)
+    case state
+    when DOWN
+      @state[CHANGED] = id if !@state[id]
+      @state[id] = true
+    when UP
+      @state[CHANGED] = id if @state[id]
+      @state[id] = false
+    end
+    puts state.inspect
+  end
+
+  def handle_key(key,state)
+    case state
+    when DOWN
+      @state[KEY] << key
+    when UP
+      @state[KEY].delete(key)
+    end      
+  end
+
+  def update(x,y)
+    active?
+    @state[CHANGED] = nil if @state[CHANGED]  
   end
 
   def overlay?(x,y)
