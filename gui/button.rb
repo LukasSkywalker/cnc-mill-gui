@@ -4,9 +4,11 @@ class Button < GosuObject
   attr_reader :x, :y
 
   SIZE = [95,30]
+  TIME_INTERVALL = 20
 
-  def initialize(window,text, x, y)
+  def initialize(window,text, x, y, action=->{})
     super("Button_#{text.gsub(' ','')}",*get_border(x,y))
+    @action = action
     @x = x
     @y = y
     @text = text
@@ -24,7 +26,11 @@ class Button < GosuObject
   end
 
   def update(x,y)
-    @timer += 21 if (!@state[LEFT] && @state[CHANGED]==LEFT)
+    clicked = (!@state[LEFT] && @state[CHANGED]==LEFT)
+    if clicked
+      @timer += TIME_INTERVALL+1
+      @action.call()
+    end
     @timer -= 1 if @timer > 0
     @state[CHANGED] = nil if @state[CHANGED]
     draw

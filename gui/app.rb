@@ -20,7 +20,7 @@ class Tutorial < Gosu::Window
     @object_manager = ObjectManager.new
     @object_manager.add(Point.new(100,100),0)
     @object_manager.add(Point.new(200,100),0)
-    @object_manager.add_button(Button.new(self,"Point",0,20))
+    @object_manager.add_button(Button.new(self,"Point",0,20,&->(){puts 'gaglä'}))
     @object_manager.add_button(Button.new(self,"Line",100,20))
     @object_manager.add_button(Button.new(self,"Free",200,20))
     @object_manager.add_button(Button.new(self,"Polygon",300,20))
