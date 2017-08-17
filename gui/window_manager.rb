@@ -5,6 +5,7 @@ class GosuObject
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
     @onclick = -> { }
+    @onposition_update = -> { }
   end
 
   def overlay?(x,y)

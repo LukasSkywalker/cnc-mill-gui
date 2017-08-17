@@ -2,7 +2,11 @@ require 'gosu'
 require_relative 'path'
 require_relative 'point'
 
+require_relative 'event_handler'
+
 class Tutorial < Gosu::Window
+  include EventHandler
+
   def initialize
     super 1024, 768
     self.caption = "Hack GUI"
@@ -27,32 +31,6 @@ class Tutorial < Gosu::Window
 
     @paths.each do |path|
       path.draw
-    end
-  end
-
-  def button_down(id)
-    case id
-    when Gosu::MsLeft
-      #run_mouse_handler(id, :down)
-      @drawing = true
-      @paths << Path.new
-    when Gosu::KbEscape
-      self.close
-    end
-  end
-
-  def button_up(id)
-    case id
-    when Gosu::MsLeft
-      #run_mouse_handler(id, :up)
-      @drawing = false
-    end
-  end
-
-  def run_mouse_handler(id, direction)
-    object = get_overlay_object(self.mouse_x, self.mouse_y)
-    if object
-      object.onclick.call(self, id, direction)
     end
   end
 
