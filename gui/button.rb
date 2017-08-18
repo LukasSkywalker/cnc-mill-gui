@@ -2,6 +2,7 @@ require_relative 'gosu_object'
 
 class Button < GosuObject
   attr_reader :x, :y
+  attr_accessor :selfautocracy_request
 
   SIZE = [95,30]
   TIME_INTERVALL = 20
@@ -15,6 +16,7 @@ class Button < GosuObject
     @on = false
     @timer = 0
     @font = Gosu::Font.new(window, Gosu::default_font_name, 24)
+    @selfautocracy_request = false
   end
 
   def get_border(x=@x,y=@y)
@@ -25,10 +27,18 @@ class Button < GosuObject
     @timer > 0
   end
 
+  def deactivate
+    @timer = 0
+  end
+
+  def activate
+    @timer += TIME_INTERVALL+1
+  end
+
   def update(x,y)
     clicked = (!@state[LEFT] && @state[CHANGED]==LEFT)
     if clicked
-      @timer += TIME_INTERVALL+1
+      activate()
       @action.call()
     end
     @timer -= 1 if @timer > 0

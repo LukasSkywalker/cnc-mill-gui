@@ -1,7 +1,7 @@
 require_relative 'button'
 
 class ToggleButton < Button
-  def initialize(window,text, x, y)
+  def initialize(window,text, x, y, action=->{})
     super
   end
 
@@ -9,8 +9,20 @@ class ToggleButton < Button
     @on
   end
 
+  def activate
+    @on = true
+  end
+
+  def deactivate
+    @on = false
+  end
+
   def update(x,y)
-    @on = !@on if (!@state[LEFT] && @state[CHANGED]==LEFT)
+    clicked = (!@state[LEFT] && @state[CHANGED]==LEFT)
+    if clicked
+      @on = !@on
+      @selfautocracy_request = true if @on
+    end
     @state[CHANGED] = nil if @state[CHANGED]
     draw
   end
