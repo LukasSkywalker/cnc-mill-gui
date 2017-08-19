@@ -5,23 +5,19 @@ require_relative '../sketch/line_to'
 class Line < GosuObject
   def initialize
     super('Line',0,0,0,0)
-    @start = nil
-    @end = nil
+    @points = []
   end
 
-  def init_start(point)
-    @start = point
-  end
-
-  def init_end(point)
-    @end = point
+  def add(point)
+    @points << point
   end
 
   def update(x,y)
-    if @start && @end
-      Gosu.draw_line(@start.x,@start.y,Gosu::Color::GREEN,@end.x,@end.y, Gosu::Color::GREEN)
-    elsif @start
-      Gosu.draw_line(@start.x,@start.y,Gosu::Color::GREEN,x,y, Gosu::Color::GREEN)      
+    if @points.length > 0
+      ppair = @points.length > 1 ? @points.zip(@points) : @points.zip([*@points[1..-1],Point.new(x,y)])
+      ppair.each do |start,ende|
+        Gosu.draw_line(start.x,start.y,Gosu::Color::GREEN,ende.x,ende.y, Gosu::Color::GREEN)
+      end
     end
   end
 end

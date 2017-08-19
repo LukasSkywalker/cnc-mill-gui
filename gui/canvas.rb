@@ -42,15 +42,11 @@ class Canvas < GosuObject
       @state[:current_line] = Line.new
       @object_manager.add(@state[:current_line],0)
     end
-    point = Point.new(@window.mouse_x,@window.mouse_y)
-    @object_manager.add(point,0)
     case state
     when DOWN
-      @state[:current_line].init_start(point)
-    when UP
-      @state[:current_line].init_end(point)
-      @elements[Time.now] = @state[:current_line]
-      @state[:current_line] = nil
+      point = Point.new(@window.mouse_x,@window.mouse_y)
+      @object_manager.add(point,0)
+      @state[:current_line].add(point)
     end
   end
 
