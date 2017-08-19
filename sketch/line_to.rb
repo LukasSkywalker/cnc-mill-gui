@@ -21,7 +21,6 @@ class LineTo < Command
     tool.update_position(x, y)
   end
 
-
   def get_pos(tool)
     if @is_relative
       [tool.position.first + @x, tool.position.last + @y]

@@ -59,7 +59,7 @@ class ObjectManager
 
   def add_button(button, group = :default)
     raise 'has to be a button object' unless button.is_a?(Button)
-    add(button,-999)
+    add(button,-998)
     @buttons[group] ||= []
     @buttons[group] << button
   end
@@ -73,9 +73,10 @@ class ObjectManager
     end
     false
   end
-
+  
   def get_overlay_object(x, y)
     keys = @objects.keys.sort.reverse
+    puts keys.inspect
     keys.each do |k|
       @objects[k].each do |obj|
         return obj if obj.overlay?(x,y)

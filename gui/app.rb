@@ -6,15 +6,16 @@ require_relative 'toggle_button'
 
 require_relative 'event_handler'
 require_relative 'object_manager'
+require_relative 'canvas'
 
-class Tutorial < Gosu::Window
+class App < Gosu::Window
   include EventHandler
 
   WIDTH = 1024
   HEIGHT = 768
 
   def initialize
-    super WIDTH , HEIGHT
+    super App::WIDTH , App::HEIGHT
     self.caption = "Hack GUI"
     @first_frame = true
     @object_manager = ObjectManager.new
@@ -24,9 +25,11 @@ class Tutorial < Gosu::Window
       @object_manager.add(Point.new(self.mouse_x,self.mouse_y),0)
     }), :tools)
     @object_manager.add_button(ToggleButton.new(self,"Line",100,20), :tools)
-    @object_manager.add_button(ToggleButton.new(self,"Freehand",200,20), :tools)
+    @object_manager.add_button(ToggleButton.new(self,"Arc",200,20), :tools)
     @object_manager.add_button(ToggleButton.new(self,"Polygon",300,20), :tools)
-    @object_manager.add_button(ToggleButton.new(self,"Select",400,20))
+    @object_manager.add_button(ToggleButton.new(self,"Freehand",400,20), :tools)
+    @object_manager.add_button(ToggleButton.new(self,"Select",500,20))
+    @object_manager.add(Canvas.new(self,@object_manager),-999)
   end
   
   def update
@@ -41,4 +44,4 @@ class Tutorial < Gosu::Window
   end
 end
 
-Tutorial.new.show
+App.new.show

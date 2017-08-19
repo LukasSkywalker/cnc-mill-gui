@@ -1,5 +1,5 @@
 class GosuObject
-  attr_accessor :name, :onclick
+  attr_accessor :name,
 
   UP = :up
   DOWN = :down
@@ -7,7 +7,6 @@ class GosuObject
   RIGHT = :right
   CHANGED = :changed
   KEY = :key
-
 
   def initialize(name,left,bottom,right,top)
     @name = name
@@ -42,7 +41,6 @@ class GosuObject
       @state[CHANGED] = id if @state[id]
       @state[id] = false
     end
-    puts state.inspect
   end
 
   def handle_key(key,state)

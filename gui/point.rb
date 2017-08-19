@@ -18,7 +18,7 @@ class Point < GosuObject
   def update(x,y)
     if active?
       @x,@y = x,y
-      @left,@bottom,@right,@top = get_border
+      @left,@bottom,@right,@top = get_border()
     end
     draw
   end

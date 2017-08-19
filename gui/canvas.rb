@@ -1,0 +1,71 @@
+require_relative 'gosu_object'
+require_relative 'line'
+
+# require_relative 'app'
+
+class Canvas < GosuObject
+  def initialize(gosu_window,object_manager)
+    super('Canvas',0,0,App::WIDTH,App::HEIGHT)
+    @object_manager = object_manager
+    @window = gosu_window
+    @actions = {:line=>self.method(:line_action),
+    :polygon=>self.method(:polygon_action),
+    :arc=>self.method(:arc_action),
+    :point=>self.method(:point_action)}
+    @state[:action]=:line
+    @elements = {}
+  end
+
+  def active?
+    true
+  end
+
+  def onclick(id,state)
+    @actions[@state[:action]].call(id,state)
+  end
+
+  def point_action(id,state)
+    return handle_key(id,state) unless @state.has_key?(id)
+    return unless id==GosuObject::LEFT
+    case state
+    when DOWN
+      pos = [@window.mouse_x,@window.mouse_y]
+      @object_manager.add(Point.new(*pos),0)
+      @elements[Time.now] = pos
+    end
+  end
+
+  def line_action(id,state)
+    return handle_key(id,state) unless @state.has_key?(id)
+    return unless id==GosuObject::LEFT
+    if !@state[:current_line]
+      @state[:current_line] = Line.new
+      @object_manager.add(@state[:current_line],0)
+    end
+    point = Point.new(@window.mouse_x,@window.mouse_y)
+    @object_manager.add(point,0)
+    case state
+    when DOWN
+      @state[:current_line].init_start(point)
+    when UP
+      @state[:current_line].init_end(point)
+      @elements[Time.now] = @state[:current_line]
+      @state[:current_line] = nil
+    end
+  end
+
+  def polygon_action(id,state)
+    
+  end
+  
+  def arc_action(id,state)
+
+  end
+
+  def update(x,y)
+  end
+
+  def delete?
+    false
+  end
+end
