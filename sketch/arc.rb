@@ -39,16 +39,16 @@ class Arc < Command
     end_point = get_end_point(tool.status.position)
     pos = tool.status.position
     abs_center = get_absolute_center(pos)
-    radius = vec_norm(get_relative_center(pos))
+    radius = Arc.vec_norm(get_relative_center(pos))
     pdf.stroke do
       pdf.move_to(*pos)
       pdf.stroke_color '0000ff'
-      angle_offset = get_angle_offset(get_relative_center(pos))
+      angle_offset = Arc.get_angle_offset(get_relative_center(pos))
       (0..@angle).step(PRECISION_RAD) do |d|
         d = @dir==CLOCKWISE ? angle_offset-d : angle_offset+d
         cos = radius*Math.cos(d)
         sin = radius*Math.sin(d)
-        pos = abs_center.zip([cos,sin]).map{ |v1,v2| v1+v2 }
+        pos = Arc.vec_add(abs_center,[cos,sin])
         pdf.line_to(*pos)
       end
       pdf.line_to(*end_point)
@@ -58,7 +58,7 @@ class Arc < Command
 
   def get_relative_center(position)
     return @center if @is_relative
-    @center.zip(position).map{ |v1,v2| v1-v2 }
+    Arc.vec_diff(position,@center)
   end
 
   def get_absolute_center(position)
@@ -66,24 +66,45 @@ class Arc < Command
     @center
   end
 
-  def get_angle_offset(dir_vec)
-    dir_vec = normalized_vec(dir_vec)
-    offset = sign(dir_vec[1])*Math.acos(dir_vec[0])
-    offset+Math::PI
-  end
+  class << self
+    def get_angle_offset(dir_vec)
+      dir_vec = normalized_vec(dir_vec)
+      offset = sign(dir_vec[1])*Math.acos(dir_vec[0])
+      offset+Math::PI
+    end
 
-  def sign(num)
-    return -1 if num<0 
-    1
-  end
+    def sign(num)
+      return -1 if num<0 
+      1
+    end
 
-  def normalized_vec(vec)
-    len = vec_norm(vec)
-    vec.map{ |v| v/len }
-  end
+    def normalized_vec(vec)
+      len = vec_norm(vec)
+      vec.map{ |v| v/len }
+    end
 
-  def vec_norm(vec)
-    Math.sqrt(vec.reduce(0){ |n,v| n+v**2 })
+    def vec_norm(vec)
+      Math.sqrt(vec.reduce(0){ |n,v| n+v**2 })
+    end
+
+    def vec_diff(v1,v2)
+      [v1[0]-v2[0],v1[1]-v2[1]]
+    end
+
+    def vec_add(v1,v2)
+      [v1[0]+v2[0],v1[1]+v2[1]]
+    end
+
+    def angle_between(v1,v2)
+      v1 = Arc.normalized_vec(v1)
+      v2 = Arc.normalized_vec(v2)
+      Math::acos(dot(v1,v2))
+    end
+
+    def dot(v1,v2)
+      (v1[0]*v2[0]) + (v1[1]*v2[1])
+    end
+
   end
 
 end

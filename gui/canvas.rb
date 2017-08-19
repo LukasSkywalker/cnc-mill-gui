@@ -1,5 +1,6 @@
 require_relative 'gosu_object'
 require_relative 'line'
+require_relative 'gosu_arc'
 
 # require_relative 'app'
 
@@ -12,7 +13,7 @@ class Canvas < GosuObject
     :polygon=>self.method(:polygon_action),
     :arc=>self.method(:arc_action),
     :point=>self.method(:point_action)}
-    @state[:action]=:line
+    @state[:action]=:arc
     @elements = {}
   end
 
@@ -55,7 +56,25 @@ class Canvas < GosuObject
   end
   
   def arc_action(id,state)
-
+    return handle_key(id,state) unless @state.has_key?(id)
+    return unless id==GosuObject::LEFT
+    if !@state[:current_arc]
+      @state[:current_arc] = GosuArc.new
+      @object_manager.add(@state[:current_arc],0)
+    end
+    case state
+    when DOWN
+      point = Point.new(@window.mouse_x,@window.mouse_y)
+      @object_manager.add(point,0)
+      if !@state[:current_arc].complete?
+        point2 = Point.new(@window.mouse_x,@window.mouse_y)
+        @object_manager.add(point2,0)
+        @state[:current_arc].add(point,point2)
+      else
+        @state[:current_arc].add(point)
+        @state[:current_arc]=nil
+      end
+    end
   end
 
   def update(x,y)

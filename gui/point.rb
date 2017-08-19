@@ -26,4 +26,12 @@ class Point < GosuObject
   def draw
     Gosu.draw_rect(@x-SIZE,@y-SIZE, 2*SIZE,2*SIZE, Gosu::Color::BLUE)
   end
+
+  def to_a
+    [x,y]
+  end
+
+  def ==(other)
+    @x==other.x && @y=other.y
+  end
 end
