@@ -14,7 +14,7 @@ class Line < GosuObject
   def update(x,y)
     update_deleted()
     if @points.length > 0
-      ppair = @points.length > 1 ? @points[0..-2].zip(@points[1..-1]) : @points.zip([*@points[1..-1],Point.new(x,y)])
+      ppair = finished? ? @points[0..-2].zip(@points[1..-1]) : @points.zip([*@points[1..-1],Point.new(x,y)])
       ppair.each do |start,ende|
         Gosu.draw_line(start.x,start.y,Gosu::Color::GREEN,ende.x,ende.y, Gosu::Color::GREEN)
       end

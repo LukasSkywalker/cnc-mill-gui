@@ -51,6 +51,11 @@ class ObjectManager
     end
   end
 
+  def get_active_button(group = :default)
+    # puts @buttons[group].inspect
+    @buttons[group].reject{|obj| puts obj.inspect;!obj.active?}.first
+  end
+
   def add(new_object, z=0)
     raise 'has to be a gosu object' unless new_object.is_a?(GosuObject)
     @objects[z] ||= []

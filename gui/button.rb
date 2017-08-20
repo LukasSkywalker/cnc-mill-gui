@@ -1,7 +1,7 @@
 require_relative 'gosu_object'
 
 class Button < GosuObject
-  attr_reader :x, :y
+  attr_reader :x, :y, :text
   attr_accessor :selfautocracy_request
 
   SIZE = [95,30]

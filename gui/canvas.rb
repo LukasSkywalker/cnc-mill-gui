@@ -10,11 +10,20 @@ class Canvas < GosuObject
     @object_manager = object_manager
     @window = gosu_window
     @actions = {:line=>self.method(:line_action),
-    :polygon=>self.method(:polygon_action),
-    :arc=>self.method(:arc_action),
-    :point=>self.method(:point_action)}
-    @state[:action]=:arc
-    @elements = {}
+      :polygon=>self.method(:polygon_action),
+      :arc=>self.method(:arc_action),
+      :point=>self.method(:point_action)}
+    @state[:action]=:line
+  end
+
+  def update_tool()
+    tool = @object_manager.get_active_button(:tools)
+    return unless tool
+    if tool.text.downcase.to_sym != @state[:action]
+      @state[:current_line].finish
+      @state[:current_line] = nil if @state[:action]==:line
+    end
+    @state[:action] = tool.text.downcase.to_sym
   end
 
   def active?
@@ -22,6 +31,7 @@ class Canvas < GosuObject
   end
 
   def onclick(id,state)
+    update_tool()
     @actions[@state[:action]].call(id,state)
   end
 
@@ -32,7 +42,6 @@ class Canvas < GosuObject
     when DOWN
       pos = [@window.mouse_x,@window.mouse_y]
       @object_manager.add(Point.new(*pos),0)
-      @elements[Time.now] = pos
     end
   end
 

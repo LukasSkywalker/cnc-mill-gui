@@ -11,7 +11,7 @@ class GosuObject
   def initialize(name,left,bottom,right,top)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
-    @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil}
+    @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil,:finished=>false}
     @stop_request = false
   end
 
@@ -21,6 +21,14 @@ class GosuObject
       return false
     end
     @state[LEFT]
+  end
+
+  def finish
+    @state[:finished] = true
+  end
+
+  def finished?
+    @state[:finished]
   end
 
   def delete?
