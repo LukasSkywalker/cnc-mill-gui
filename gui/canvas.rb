@@ -1,5 +1,5 @@
 require_relative 'gosu_object'
-require_relative 'line'
+require_relative 'gosu_line'
 require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
 
@@ -13,7 +13,8 @@ class Canvas < GosuObject
     @actions = {:line=>self.method(:line_action),
       :polygon=>self.method(:polygon_action),
       :arc=>self.method(:arc_action),
-      :point=>self.method(:point_action)}
+      :point=>self.method(:point_action),
+      :freehand=>self.method(:freehand_action)}
     @state[:action]=:line
   end
 
@@ -55,8 +56,12 @@ class Canvas < GosuObject
   def line_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
     return unless id==GosuObject::LEFT
-    if !@state[:current_line]
-      @state[:current_line] = Line.new
+    if !@state[:current_line] || @state[:current_line].finished?
+      point = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::BLUE,20.0)
+      @object_manager.add(point,1)
+      point2 = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::RED,20.0)
+      @object_manager.add(point2,1)
+      @state[:current_line] = GosuLine.new(point,point2)
       @object_manager.add(@state[:current_line],0)
     end
     case state
@@ -109,6 +114,9 @@ class Canvas < GosuObject
         @state[:current_arc]=nil
       end
     end
+  end
+
+  def freehand_action(id,state)
   end
 
   def update(x,y)

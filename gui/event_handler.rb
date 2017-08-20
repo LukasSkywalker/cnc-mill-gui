@@ -1,5 +1,7 @@
 module EventHandler
+  DOUBLE_CLICK_TIME_THRESHOLD = 0.3 
   @current_object = nil
+  @last_leftclick = nil
 
   def set_current_object(current_object)
     return until current_object
@@ -13,7 +15,16 @@ module EventHandler
   def button_down(id)
     case id
     when Gosu::MsLeft
-      run_mouse_handler(GosuObject::LEFT, GosuObject::DOWN)
+      @last_leftclick ||= Time.new(0)
+      time = Time.now
+      df = time-@last_leftclick
+      puts df
+      @last_leftclick = time
+      if df < DOUBLE_CLICK_TIME_THRESHOLD
+        run_mouse_handler(GosuObject::LEFT, GosuObject::DOWN2)
+      else
+        run_mouse_handler(GosuObject::LEFT, GosuObject::DOWN)
+      end
     when Gosu::MsRight
       run_mouse_handler(GosuObject::RIGHT, GosuObject::DOWN)
     when Gosu::KbEscape

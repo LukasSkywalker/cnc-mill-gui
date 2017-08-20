@@ -3,6 +3,7 @@ class GosuObject
 
   UP = :up
   DOWN = :down
+  DOWN2 = :down2
   LEFT = :left
   RIGHT = :right
   CHANGED = :changed
@@ -13,6 +14,7 @@ class GosuObject
     @left,@bottom,@right,@top = left,bottom,right,top
     @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil,:finished=>false}
     @stop_request = false
+    @last_modified = Time.now    
   end
 
   def active?
@@ -44,6 +46,10 @@ class GosuObject
     case state
     when DOWN
       @state[CHANGED] = id if !@state[id]
+      @state[id] = true
+    when DOWN2
+      puts'down2'
+      @state[CHANGED] = DOWN2 if !@state[id]
       @state[id] = true
     when UP
       @state[CHANGED] = id if @state[id]

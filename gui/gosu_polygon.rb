@@ -11,7 +11,6 @@ class GosuPolygon < GosuObject
     @next = :start
     @center = center_point
     @last_center = Point.new(*@center.to_a)
-    @last_modified = Time.now
   end
 
 

@@ -1,15 +1,15 @@
 require_relative 'gosu_object'
 
 class Point < GosuObject
-  attr_reader :x, :y, :modified
+  attr_reader :x, :y, :modified, :double_clicked
 
-  SIZE = 10
-
-  def initialize(x, y, color=Gosu::Color::BLUE)
-    super('Point',*get_border(x,y))
+  def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
+    super('Point',*get_border(x,y,size))
+    @size = size
     set_pos(x,y)
     @color = color
     @modified = Time.now
+    @double_clicked = false
   end
 
   def set_color(color)
@@ -27,19 +27,22 @@ class Point < GosuObject
     @modified = Time.now
   end
 
-  def get_border(x=@x,y=@y)
-    [x-SIZE,y-SIZE,x+SIZE,y+SIZE]
+  def get_border(x=@x,y=@y,sz=@size)
+    sz2 = sz / 2.0
+    [x-sz2,y-sz2,x+sz2,y+sz2]
   end
 
   def update(x,y)
     if active?
       set_pos(x,y)
     end
+    @double_clicked = @state[CHANGED] == DOWN2
     draw()
   end
 
   def draw
-    Gosu.draw_rect(@x-SIZE,@y-SIZE, 2*SIZE,2*SIZE, @color)
+    sz2 = @size/2.0
+    Gosu.draw_rect(@x-sz2,@y-sz2, @size,@size, @color)
   end
 
   def to_a
