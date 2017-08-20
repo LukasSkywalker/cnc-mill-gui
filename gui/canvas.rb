@@ -1,5 +1,6 @@
 require_relative 'gosu_object'
 require_relative 'line'
+require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
 
 # require_relative 'app'
@@ -20,8 +21,14 @@ class Canvas < GosuObject
     tool = @object_manager.get_active_button(:tools)
     return unless tool
     if tool.text.downcase.to_sym != @state[:action]
-      @state[:current_line].finish
-      @state[:current_line] = nil if @state[:action]==:line
+      case @state[:action]
+      when :line
+        @state[:current_line].finish if @state[:current_line]
+        @state[:current_line] = nil
+      when :polygon
+        @state[:current_polygon].finish if @state[:current_line]
+        @state[:current_polygon] = nil
+      end
     end
     @state[:action] = tool.text.downcase.to_sym
   end
@@ -61,6 +68,20 @@ class Canvas < GosuObject
   end
 
   def polygon_action(id,state)
+    return handle_key(id,state) unless @state.has_key?(id)
+    return unless id==GosuObject::LEFT
+    if !@state[:current_polygon]
+      point = Point.new(@window.mouse_x,@window.mouse_y)
+      @object_manager.add(point,1)
+      @state[:current_polygon] = GosuPolygon.new(point)
+      @object_manager.add(@state[:current_polygon],0)
+    end
+    case state
+    when DOWN
+      point = Point.new(@window.mouse_x,@window.mouse_y)
+      @object_manager.add(point,0)
+      @state[:current_polygon].add(point)
+    end
     
   end
   

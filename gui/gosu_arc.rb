@@ -15,9 +15,6 @@ class GosuArc < GosuObject
   end
 
   def set(start: nil, radius_control: nil,ende: nil,center: nil)
-    puts start.inspect
-    puts ende.inspect
-    puts center.inspect
     if start
       @start = start
       @start.set_color(Gosu::Color::GREEN)
@@ -34,14 +31,6 @@ class GosuArc < GosuObject
       @center = center
       @center.set_color(Gosu::Color::BLUE)
     end
-    # if @start.nil?
-    #   @start = point
-    #   @radius_control = point
-    #   @end = point2
-    #   @end.set_color(Gosu::Color::RED)
-    # elsif !@center
-    #   @center = point
-    # end
   end
 
   def update(x,y)
@@ -65,7 +54,6 @@ class GosuArc < GosuObject
       Gosu.draw_line(*last_pos.to_a,Gosu::Color::GREEN,*pos.to_a, Gosu::Color::GREEN)
       last_pos = pos
     end
-    puts last_pos.to_a.inspect
     Gosu.draw_line(*last_pos.to_a,Gosu::Color::RED,@end.x,@end.y, Gosu::Color::RED)
     update_control_points(center)
   end

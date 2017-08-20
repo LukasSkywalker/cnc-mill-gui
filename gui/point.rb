@@ -9,10 +9,15 @@ class Point < GosuObject
     super('Point',*get_border(x,y))
     set_pos(x,y)
     @color = color
+    @modified = Time.now
   end
 
   def set_color(color)
     @color = color
+  end
+
+  def get_color
+    @color
   end
 
   def set_pos(x,y)
@@ -30,7 +35,7 @@ class Point < GosuObject
     if active?
       set_pos(x,y)
     end
-    draw
+    draw()
   end
 
   def draw
@@ -105,7 +110,7 @@ class Point < GosuObject
   end
 
   def scale(scalar)
-    n normalize
+    n=normalize
     n=n*scalar
     n
   end

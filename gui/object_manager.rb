@@ -52,7 +52,6 @@ class ObjectManager
   end
 
   def get_active_button(group = :default)
-    # puts @buttons[group].inspect
     @buttons[group].reject{|obj| puts obj.inspect;!obj.active?}.first
   end
 
@@ -81,7 +80,6 @@ class ObjectManager
   
   def get_overlay_object(x, y)
     keys = @objects.keys.sort.reverse
-    puts keys.inspect
     keys.each do |k|
       @objects[k].each do |obj|
         return obj if obj.overlay?(x,y)
