@@ -1,6 +1,6 @@
-require_relative 'gosu_object'
+require_relative 'gosu_component'
 
-class Button < GosuObject
+class Button < GosuComponent
   attr_reader :x, :y, :text
   attr_accessor :selfautocracy_request
 

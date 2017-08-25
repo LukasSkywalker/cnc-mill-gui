@@ -84,7 +84,7 @@ class Arc < Command
     end
 
     def vec_norm(vec)
-      Math.sqrt(vec.reduce(0){ |n,v| n+v**2 })
+      Math.sqrt(vec.reduce(0){ |n,v| n+v*v })
     end
 
     def vec_diff(v1,v2)

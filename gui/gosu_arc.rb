@@ -1,13 +1,54 @@
-require_relative 'gosu_object'
+require_relative 'gosu_component'
 require_relative 'point'
 require_relative '../sketch/arc'
 
-class GosuArc < GosuObject
+class GosuArc < GosuComponent
   def initialize
     super('Arc',0,0,0,0)
     @start=@center=@end=nil
     @deleted = false
     @last_center = nil
+    @edit_mode = true
+  end
+
+
+  def click_action(id,pos)
+    return unless id == LEFT
+    if active?
+      @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
+      @active_controlpoint.onclick(id,DOWN,pos)
+    else
+      @shift_mode = true
+    end  
+  end
+
+  def get_active_points
+    [@start,@end,@center].reject(&:nil?)
+  end
+
+  def doubleclick_action(id,pos)
+    return unless id == GosuComponent::LEFT
+    if active?
+      @edit_mode = false
+      @start.draw = @end.draw = false
+    else
+      @edit_mode = true
+      @active_controlpoint = [@start,@stop,@center].find{|p| p.overlay?(*pos)}
+      @active_controlpoint.onclick(id,DOWN2,pos) if @active_controlpoint
+      @start.draw = @end.draw = true
+    end
+  end
+
+  def overlay?(x,y)
+    if active?
+      get_active_points().any?{|p| p.overlay?(x,y)}
+    else
+      @center.overlay?(x,y) unless @center.nil?
+    end
+  end
+
+  def active?
+    @edit_mode
   end
 
   def delete?
@@ -36,6 +77,8 @@ class GosuArc < GosuObject
   def update(x,y)
     return if @start.nil?
     update_deleted()
+    return if !@draw
+
     angle = 2*Math::PI
     last_pos = Point.new(@start.x,@start.y)
     center = @center.nil? ? Point.new(x,y) : @center

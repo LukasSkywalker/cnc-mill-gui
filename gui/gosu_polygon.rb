@@ -1,20 +1,22 @@
-require_relative 'gosu_object'
+require_relative 'gosu_composition'
 require_relative 'point'
 require_relative '../sketch/polygon'
 require 'beziercurve'
 
-class GosuPolygon < GosuObject
+class GosuPolygon < GosuComposition
   def initialize(center_point)
-    super('Polygon',0,0,0,0)
+    super('Polygon',center_point,Point.new(0,0))
     @control_points = []
     @polygon = nil
     @next = :start
-    @center = center_point
-    @last_center = Point.new(*@center.to_a)
   end
 
-
+  def get_active_points()
+    [@start,@stop,@center].reject(&:nil?).concat(@control_points)
+  end
+  
   def add(control_point)
+    return if @finished
     case @next
     when :start
       @start = control_point
@@ -43,38 +45,25 @@ class GosuPolygon < GosuObject
 
   def update(x,y)
     return unless @polygon
-    @polygon = Bezier::Curve.new(@start.to_a,*@control_points.map{|p| p.to_a},@end.to_a)
-    update_deleted()
+    return unless @draw
+    if active?
+      update_deleted()
+    end
     update_shift()
+    @polygon = Bezier::Curve.new(@start.to_a,*@control_points.map{|p| p.to_a},@end.to_a)
     last = @start.to_a
     (0..1).step(10.0/get_path_length()).each do |p|
       pos = @polygon.point_on_curve(p).to_a
       Gosu.draw_line(*last,Gosu::Color.new(255,255*p,255*(1.0-p),0),*pos, Gosu::Color.new(255,255*p,255*(1.0-p),0))
       last = pos
     end
-    part = 1.0/(@control_points.length+1)
-    @control_points.each_with_index do |p,i|
-      col = p.get_color
-      Gosu.draw_line(*p.to_a,col,*@polygon.point_on_curve((i+1)*part).to_a, col)
-    end
-  end
-
-  def update_shift
-    if @start.modified > @last_modified || @end.modified > @last_modified
-      @last_modified = @start.modified > @end.modified ? @start.modified : @end.modified
-      new_pos = @start + ((@end-@start)/2.0)
-      @center.set_pos(*new_pos.to_a)
-      puts "update shift"
-    else
-      shift = (@center - @last_center).to_a
-      puts "shift"
-      @start.shift(*shift)
-      @end.shift(*shift)
-      @control_points.each do |p|
-        p.shift(*shift)
+    if active?
+      part = 1.0/(@control_points.length+1)
+      @control_points.each_with_index do |p,i|
+        col = p.get_color
+        Gosu.draw_line(*p.to_a,col,*@polygon.point_on_curve((i+1)*part).to_a, col)
       end
     end
-    @last_center.set_pos(*@center.to_a)
   end
 
   def get_path_length

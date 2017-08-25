@@ -1,11 +1,11 @@
-require_relative 'gosu_object'
+require_relative 'gosu_component'
 require_relative 'gosu_line'
 require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
 
 # require_relative 'app'
 
-class Canvas < GosuObject
+class Canvas < GosuComponent
   def initialize(gosu_window,object_manager)
     super('Canvas',0,0,App::WIDTH,App::HEIGHT)
     @object_manager = object_manager
@@ -18,16 +18,16 @@ class Canvas < GosuObject
     @state[:action]=:line
   end
 
-  def update_tool()
+  def update_tool(id,state)
     tool = @object_manager.get_active_button(:tools)
     return unless tool
     if tool.text.downcase.to_sym != @state[:action]
       case @state[:action]
       when :line
-        @state[:current_line].finish if @state[:current_line]
+        return if @state[:current_line]
         @state[:current_line] = nil
       when :polygon
-        @state[:current_polygon].finish if @state[:current_line]
+        return if @state[:current_line]
         @state[:current_polygon] = nil
       end
     end
@@ -38,14 +38,22 @@ class Canvas < GosuObject
     true
   end
 
-  def onclick(id,state)
-    update_tool()
-    @actions[@state[:action]].call(id,state)
+  def onclick(id,state,pos)
+    update_tool(id,state)
+    current = get_current_object()
+    # puts "#{current.name}->#{current.active?}" if current
+    if current && current.overlay?(*pos)
+      puts "overl"
+      return current.onclick(id,state,pos)
+    else
+      @actions[@state[:action]].call(id,state)
+    end
+    self
   end
 
   def point_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuObject::LEFT
+    return unless id==GosuComponent::LEFT
     case state
     when DOWN
       pos = [@window.mouse_x,@window.mouse_y]
@@ -55,13 +63,13 @@ class Canvas < GosuObject
 
   def line_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuObject::LEFT
-    if !@state[:current_line] || @state[:current_line].finished?
+    return unless id==GosuComponent::LEFT
+    if !@state[:current_line] || !@state[:current_line].active?
       point = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::BLUE,20.0)
       @object_manager.add(point,1)
-      point2 = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::RED,20.0)
-      @object_manager.add(point2,1)
-      @state[:current_line] = GosuLine.new(point,point2)
+      # point2 = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::RED,20.0)
+      # @object_manager.add(point2,1)
+      @state[:current_line] = GosuLine.new(point)
       @object_manager.add(@state[:current_line],0)
     end
     case state
@@ -74,7 +82,10 @@ class Canvas < GosuObject
 
   def polygon_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuObject::LEFT
+    return unless id==GosuComponent::LEFT
+    if !@state[:current_polygon] || !@state[:current_polygon].active?
+      @state[:current_polygon] = nil
+    end
     if !@state[:current_polygon]
       point = Point.new(@window.mouse_x,@window.mouse_y)
       @object_manager.add(point,1)
@@ -89,10 +100,22 @@ class Canvas < GosuObject
     end
     
   end
+
+  def get_current_object
+    case @state[:action]
+    when :line
+      return @state[:current_line] if @state[:current_line]&&@state[:current_line].active?
+    when :arc
+      return @state[:current_arc] if @state[:current_arc]&&@state[:current_arc].active?
+    when :polygon
+      return @state[:current_polygon] if @state[:current_polygon]&&@state[:current_polygon].active?
+    end
+    nil
+  end
   
   def arc_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuObject::LEFT
+    return unless id==GosuComponent::LEFT
     init = false
     if !@state[:current_arc]
       @state[:current_arc] = GosuArc.new

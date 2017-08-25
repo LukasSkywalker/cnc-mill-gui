@@ -1,6 +1,6 @@
-require_relative 'gosu_object'
+require_relative 'gosu_component'
 
-class Point < GosuObject
+class Point < GosuComponent
   attr_reader :x, :y, :modified, :double_clicked
 
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
@@ -9,7 +9,6 @@ class Point < GosuObject
     set_pos(x,y)
     @color = color
     @modified = Time.now
-    @double_clicked = false
   end
 
   def set_color(color)
@@ -36,8 +35,7 @@ class Point < GosuObject
     if active?
       set_pos(x,y)
     end
-    @double_clicked = @state[CHANGED] == DOWN2
-    draw()
+    draw() if @draw
   end
 
   def draw
@@ -58,11 +56,19 @@ class Point < GosuObject
   end
   
   def >(other)
-    @modified > other.modified
+    if other.is_a?(Point)
+      @modified > other.modified
+    else
+      @modified > other
+    end
   end
   
   def <(other)
-    @modified < other.modified
+    if other.is_a?(Point)
+      @modified < other.modified
+    else
+      @modified < other
+    end
   end
 
   def -(other)

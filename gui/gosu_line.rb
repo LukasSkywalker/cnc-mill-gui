@@ -1,14 +1,19 @@
-require_relative 'gosu_object'
+require_relative 'gosu_composition'
 require_relative 'point'
 
-class GosuLine < GosuObject
-  def initialize(center_point,scale_point)
-    super('Line',0,0,0,0)
+class GosuLine < GosuComposition
+  def initialize(center_point)
+    super('Line',center_point, Point.new(0,0))
     @points = []
-    @center = center_point
-    @last_center = Point.new(0,0)
-    @scale_point = scale_point
     @last_modified = Time.new(0)
+  end
+
+  def get_active_points
+    get_instance_points().concat(@points)
+  end
+
+  def get_instance_points
+    [@scale_point,@center].reject(&:nil?)
   end
 
   def add(point)
@@ -16,31 +21,16 @@ class GosuLine < GosuObject
   end
 
   def update(x,y)
+    return unless @draw
     update_deleted()
     update_shift()
     finish() if @points.last && @points.last.double_clicked
     if @points.length > 0
-      ppair = finished? ? @points[0..-2].zip(@points[1..-1]) : @points.zip([*@points[1..-1],Point.new(x,y)])
+      ppair = active?() ? @points.zip([*@points[1..-1],Point.new(x,y)]) : @points[0..-2].zip(@points[1..-1])
       ppair.each do |start,ende|
         Gosu.draw_line(start.x,start.y,Gosu::Color::GREEN,ende.x,ende.y, Gosu::Color::GREEN)
       end
     end
-  end
-
-  def update_shift
-    last_updated = @points.reduce(Time.new(0)){|memo,p| memo = p.modified > memo ? p.modified : memo }
-    if last_updated > @last_modified
-      @last_modified = last_updated
-      new_pos = @points.reduce(Point.new(0,0)){|memo,obj| memo += obj}/@points.length.to_f
-      @center.set_pos(*new_pos.to_a)
-    else
-      shift = (@center - @last_center).to_a
-      @points.each do |p|
-        p.shift(*shift)
-      end
-      @scale_point.shift(*shift)
-    end
-    @last_center.set_pos(*@center.to_a)
   end
   
   def update_deleted

@@ -1,5 +1,5 @@
-class GosuObject
-  attr_accessor :name,
+class GosuComponent
+  attr_accessor :name,:draw
 
   UP = :up
   DOWN = :down
@@ -9,61 +9,57 @@ class GosuObject
   CHANGED = :changed
   KEY = :key
 
-  def initialize(name,left,bottom,right,top)
+  def initialize(name,left=0,bottom=0,right=0,top=0)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
     @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil,:finished=>false}
-    @stop_request = false
-    @last_modified = Time.now    
+    @last_modified = Time.now
+    @edit_mode = false
+    @draw = true
   end
 
   def active?
-    if @stop_request
-      @stop_request = false
-      return false
-    end
-    @state[LEFT]
-  end
-
-  def finish
-    @state[:finished] = true
-  end
-
-  def finished?
-    @state[:finished]
+    # @state[LEFT]
+    @edit_mode
   end
 
   def delete?
     @state[RIGHT] && @state[KEY].include?(:ctrl)
   end
 
-  def stop
-    @stop_request = true
-  end
-
-  def onclick(id,state)
-    return handle_key(id,state) unless @state.has_key?(id)
+  def onclick(id,state,pos)
+    # return handle_key(id,state) unless @state.has_key?(id)
     case state
     when DOWN
       @state[CHANGED] = id if !@state[id]
       @state[id] = true
+      click_action(id,pos)
     when DOWN2
       puts'down2'
       @state[CHANGED] = DOWN2 if !@state[id]
       @state[id] = true
+      doubleclick_action(id,pos)
     when UP
       @state[CHANGED] = id if @state[id]
       @state[id] = false
+      button_up_action(id,pos)
     end
+    self
   end
 
-  def handle_key(key,state)
-    case state
-    when DOWN
-      @state[KEY] << key
-    when UP
-      @state[KEY].delete(key)
-    end      
+
+  def click_action(id,pos)
+    return unless id==LEFT
+    puts 'click on'
+    @edit_mode = true
+  end
+  def doubleclick_action(id,pos)    
+  end
+  def button_up_action(id,pos)
+    puts 'click off'
+    return unless id==LEFT
+    puts 'click off'
+    @edit_mode = false
   end
 
   def update(x,y)
@@ -74,4 +70,5 @@ class GosuObject
   def overlay?(x,y)
     (x>@left&&x<@right) && (y>@bottom&&y<@top)
   end
+
 end

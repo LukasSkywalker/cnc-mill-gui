@@ -52,11 +52,11 @@ class ObjectManager
   end
 
   def get_active_button(group = :default)
-    @buttons[group].reject{|obj| puts obj.inspect;!obj.active?}.first
+    @buttons[group].reject{|obj| !obj.active?}.first
   end
 
   def add(new_object, z=0)
-    raise 'has to be a gosu object' unless new_object.is_a?(GosuObject)
+    raise 'has to be a gosu object' unless new_object.is_a?(GosuComponent)
     @objects[z] ||= []
     @objects[z] << new_object
   end
@@ -81,7 +81,7 @@ class ObjectManager
   def get_overlay_object(x, y)
     keys = @objects.keys.sort.reverse
     keys.each do |k|
-      @objects[k].each do |obj|
+      @objects[k].reject{|o| o.is_a?(Point)}.each do |obj|
         return obj if obj.overlay?(x,y)
       end
     end
