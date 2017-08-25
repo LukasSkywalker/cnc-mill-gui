@@ -1,8 +1,8 @@
 require_relative 'gosu_component'
 
 class Button < GosuComponent
-  attr_reader :x, :y, :text
-  attr_accessor :selfautocracy_request
+  attr_reader :text
+  attr_accessor :selfautocracy_request, :x, :y
 
   SIZE = [95,30]
   TIME_INTERVALL = 20
@@ -19,31 +19,35 @@ class Button < GosuComponent
     @selfautocracy_request = false
   end
 
+  def button_up_action(id,pos)
+  end
+
   def get_border(x=@x,y=@y)
     [x,y,x+SIZE.first,y+SIZE.last]
   end
 
+  def click_action(id,pos)
+    return unless id==LEFT
+    puts "button #{@name}: click on"
+    active? ? deactivate() : activate()
+    @action.call(self)
+  end
+  
   def active?
-    @timer > 0
+    @on
   end
-
-  def deactivate
-    @timer = 0
-  end
-
+  
   def activate
-    @timer += TIME_INTERVALL+1
+    @on = true
+    @selfautocracy_request = true if @on
   end
-
+  
+  def deactivate
+    @on = false
+  end
+  
   def update(x,y)
-    clicked = (!@state[LEFT] && @state[CHANGED]==LEFT)
-    if clicked
-      activate()
-      @action.call()
-    end
-    @timer -= 1 if @timer > 0
-    @state[CHANGED] = nil if @state[CHANGED]
-    draw
+    draw()
   end
 
   def delete?

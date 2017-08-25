@@ -1,3 +1,4 @@
+require 'byebug'
 class GosuComponent
   attr_accessor :name,:draw
 
@@ -47,10 +48,9 @@ class GosuComponent
     self
   end
 
-
   def click_action(id,pos)
     return unless id==LEFT
-    puts 'click on'
+    puts 'gosu_component: click on'
     @edit_mode = true
   end
   def doubleclick_action(id,pos)    
@@ -65,6 +65,11 @@ class GosuComponent
   def update(x,y)
     active?
     @state[CHANGED] = nil if @state[CHANGED]  
+    draw()
+  end
+
+  def draw
+
   end
 
   def overlay?(x,y)

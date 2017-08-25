@@ -1,6 +1,6 @@
 require_relative 'gosu_component'
 class GosuComposition < GosuComponent
-  def initialize(name, center, scale_point)
+  def initialize(name, center=Point.new(0,0), scale_point=Point.new(0,0))
     super(name)
     @edit_mode = true
     @center = center
@@ -11,8 +11,12 @@ class GosuComposition < GosuComponent
     @last_click_propagation = nil
   end
 
+  def recreate(pos)
+    self.class.new(self.name,Point.new(*pos))
+  end
+
   def click_action(id,pos)
-    puts "lineClick #{id}" 
+    puts "gosu_composition: click #{id}" 
     return unless id == GosuComponent::LEFT
     if active?
       @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
@@ -27,13 +31,9 @@ class GosuComposition < GosuComponent
     return unless id == GosuComponent::LEFT
     puts 'LineDubleClick'
     if active?
-      @edit_mode = false
-      get_active_points().each{|p| p.draw = false}
-      @center.draw = false
+      finish()
     else
-      @edit_mode = true
-      get_active_points().each{|p| p.draw = true}
-      @center.draw = true
+      activate()
       @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
       @active_controlpoint.onclick(id,DOWN2,pos) if @active_controlpoint
     end
@@ -101,6 +101,18 @@ class GosuComposition < GosuComponent
 
   def active?
     @edit_mode
+  end
+
+  def finish
+    @edit_mode = false
+    get_active_points().each{|p| p.draw = false}
+    @center.draw = false
+  end
+
+  def activate
+    @edit_mode = true
+    get_active_points().each{|p| p.draw = true}
+    @center.draw = true
   end
 
 

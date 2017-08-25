@@ -46,12 +46,15 @@ module EventHandler
   end
 
   def run_mouse_handler(id, state)
-    set_current_object(@object_manager.get_overlay_object(self.mouse_x, self.mouse_y))
-    if @current_object
-      puts "currentObj #{@current_object}"
-      @current_object = @current_object.onclick(id, state,[self.mouse_x, self.mouse_y])
-      # puts @current_object.inspect
-      @current_object = nil unless @current_object.active?
-    end
+    pos = [self.mouse_x, self.mouse_y]
+    @controls.onclick(id,state,pos)
+    @canvas.onclick(id,state,pos)
+    # set_current_object(@object_manager.get_overlay_object(self.mouse_x, self.mouse_y))
+    # if @current_object
+    #   puts "currentObj #{@current_object}"
+    #   @current_object = @current_object.onclick(id, state,[self.mouse_x, self.mouse_y])
+    #   # puts @current_object.inspect
+    #   @current_object = nil unless @current_object.active?
+    # end
   end
 end

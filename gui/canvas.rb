@@ -1,52 +1,53 @@
-require_relative 'gosu_component'
+require_relative 'gosu_composition'
 require_relative 'gosu_line'
 require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
 
 # require_relative 'app'
 
-class Canvas < GosuComponent
-  def initialize(gosu_window,object_manager)
-    super('Canvas',0,0,App::WIDTH,App::HEIGHT)
-    @object_manager = object_manager
+class Canvas < GosuComposition
+  attr_accessor :current_composition
+  def initialize(gosu_window)
+    super('Canvas')
+    @current_composition = nil
+    # 0,0,App::WIDTH,App::HEIGHT
     @window = gosu_window
-    @actions = {:line=>self.method(:line_action),
-      :polygon=>self.method(:polygon_action),
-      :arc=>self.method(:arc_action),
-      :point=>self.method(:point_action),
-      :freehand=>self.method(:freehand_action)}
-    @state[:action]=:line
+    @components = []
+    # @actions = {:line=>self.method(:line_action),
+    #   :polygon=>self.method(:polygon_action),
+    #   :arc=>self.method(:arc_action),
+    #   :point=>self.method(:point_action),
+    #   :freehand=>self.method(:freehand_action)}
+    # @state[:action]=:line
   end
 
-  def update_tool(id,state)
-    tool = @object_manager.get_active_button(:tools)
-    return unless tool
-    if tool.text.downcase.to_sym != @state[:action]
-      case @state[:action]
-      when :line
-        return if @state[:current_line]
-        @state[:current_line] = nil
-      when :polygon
-        return if @state[:current_line]
-        @state[:current_polygon] = nil
-      end
-    end
-    @state[:action] = tool.text.downcase.to_sym
-  end
+  # def update_tool(id,state)
+  #   tool = @object_manager.get_active_button(:tools)
+  #   return unless tool
+  #   if tool.text.downcase.to_sym != @state[:action]
+  #     case @state[:action]
+  #     when :line
+  #       return if @state[:current_line]
+  #       @state[:current_line] = nil
+  #     when :polygon
+  #       return if @state[:current_line]
+  #       @state[:current_polygon] = nil
+  #     end
+  #   end
+  #   @state[:action] = tool.text.downcase.to_sym
+  # end
 
   def active?
     true
   end
 
   def onclick(id,state,pos)
-    update_tool(id,state)
-    current = get_current_object()
-    # puts "#{current.name}->#{current.active?}" if current
-    if current && current.overlay?(*pos)
-      puts "overl"
-      return current.onclick(id,state,pos)
-    else
-      @actions[@state[:action]].call(id,state)
+    puts 'canvas: click on'
+    if @current_composition
+      @current_composition = @current_composition.recreate(pos) unless @current_composition.active?
+      @components << @current_composition unless @components.include?(@current_composition)
+      @current_composition.onclick(id,state,pos)
+      puts "canvas propagated click to #{@current_composition.name}"
     end
     self
   end
@@ -98,7 +99,6 @@ class Canvas < GosuComponent
       @object_manager.add(point,0)
       @state[:current_polygon].add(point)
     end
-    
   end
 
   def get_current_object
@@ -143,6 +143,7 @@ class Canvas < GosuComponent
   end
 
   def update(x,y)
+    @components.each{|c| c.update(x,y)}
   end
 
   def delete?
