@@ -12,8 +12,8 @@
 // the value of the 'other' resistor
 #define SERIESRESISTOR 10000
 
-#define TARGET_TEMP 80
-#define RELAY_PIN 7
+#define TARGET_TEMP 40
+#define RELAY_PIN 8
   
 uint16_t samples[NUMSAMPLES];
   
