@@ -18,11 +18,11 @@ Example based off of demos by Brian Schmalz (designer of the Big Easy Driver).
 http://www.schmalzhaus.com/EasyDriver/Examples/EasyDriverExamples.html
 ******************************************************************************/
 //Declare pin functions on Arduino
-#define stp 2
-#define dir 3
-#define MS1 4
+#define stp 3
+#define dir 2
+#define MS1 6
 #define MS2 5
-#define MS3 6
+#define MS3 4
 #define EN  7
 
 //Declare variables for functions
