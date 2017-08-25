@@ -18,17 +18,11 @@ class App < Gosu::Window
     super App::WIDTH , App::HEIGHT
     self.caption = "Hack GUI"
     @first_frame = true
-    @canvas = Canvas.new(self)
+    @canvas = Canvas.new(self,0,40,WIDTH,HEIGHT)
     @controls = Controls.new('Control Bar', 0,40,WIDTH,0)
-    @controls.add_button(Button.new(self,"Line",10,5,Proc.new{ |object|
-      if object.active?
-        @canvas.current_composition = GosuLine.new(Point.new(0,0))
-      else
-        @canvas.current_composition.finish() unless @canvas.current_composition.nil?
-      end
-    }))
-    @controls.add_button(Button.new(self,"Arc",110,5))
-    @controls.add_button(Button.new(self,"Polygon",210,5))
+    @controls.add_button(Button.new(self,"Line",10,5,button_proc(GosuLine)))
+    @controls.add_button(Button.new(self,"Arc",110,5,button_proc(GosuArc)))
+    @controls.add_button(Button.new(self,"Polygon",210,5,button_proc(GosuPolygon)))
     @controls.add_button(Button.new(self,"Freehand",310,5))
 
     # @object_manager = ObjectManager.new
@@ -43,6 +37,17 @@ class App < Gosu::Window
     # @object_manager.add_button(ToggleButton.new(self,"Freehand",400,20), :tools)
     # @object_manager.add_button(ToggleButton.new(self,"Select",500,20))
     # @object_manager.add(Canvas.new(self,@object_manager),-999)
+  end
+
+  def button_proc(tool_class)
+    Proc.new{ |object|
+      if object.active?
+        @canvas.finish_current()
+        @canvas.set_tool_class(tool_class)
+      else
+        @canvas.finish_current()
+      end
+    }
   end
   
   def update

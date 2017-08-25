@@ -1,6 +1,7 @@
 require_relative 'gosu_component'
 
 class Point < GosuComponent
+  attr_accessor :color
   attr_reader :x, :y, :modified, :double_clicked
 
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
@@ -9,14 +10,6 @@ class Point < GosuComponent
     set_pos(x,y)
     @color = color
     @modified = Time.now
-  end
-
-  def set_color(color)
-    @color = color
-  end
-
-  def get_color
-    @color
   end
 
   def set_pos(x,y)
@@ -32,9 +25,7 @@ class Point < GosuComponent
   end
 
   def update(x,y)
-    if active?
-      set_pos(x,y)
-    end
+    set_pos(x,y) if active?
     draw() if @draw
   end
 
@@ -80,21 +71,18 @@ class Point < GosuComponent
   end
 
   def shift(x,y)
-    @x += x
-    @y += y
+    set_pos(@x+x,@y+y)
   end
 
   def *(scalar)
     raise 'must be a scalar' unless scalar.is_a?(Numeric)
-    @x *= scalar
-    @y *= scalar
+    set_pos(@x*scalar,@y*scalar)
     self
   end
 
   def /(scalar)
     raise 'must be a scalar' unless scalar.is_a?(Numeric)
-    @x /= scalar
-    @y /= scalar
+    set_pos(@x/scalar,@y/scalar)
     self
   end
 
@@ -109,8 +97,7 @@ class Point < GosuComponent
 
   def normalize!
     n = norm
-    @x /= n
-    @y /= n
+    set_pos(@x/n,@y/n)
     self
   end
 
@@ -119,9 +106,8 @@ class Point < GosuComponent
   end
 
   def scale(scalar)
-    n=normalize
-    n=n*scalar
-    n
+    norm_point=normalize
+    norm_point*scalar
   end
 
   def scale!(scalar)

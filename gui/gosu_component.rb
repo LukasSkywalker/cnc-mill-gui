@@ -69,7 +69,7 @@ class GosuComponent
   end
 
   def draw
-
+    raise 'not implemented'
   end
 
   def overlay?(x,y)

@@ -4,19 +4,17 @@ class GosuComposition < GosuComponent
     super(name)
     @edit_mode = true
     @center = center
+    @center.color = Gosu::Color::BLUE
     @scale_point = scale_point
+    @scale_point.color = Gosu::Color::GREEN
+    @scale_point.draw = false
     @last_center = Point.new(*center.to_a)
     @active_controlpoint = nil
     @shift_mode = false
     @last_click_propagation = nil
   end
 
-  def recreate(pos)
-    self.class.new(self.name,Point.new(*pos))
-  end
-
   def click_action(id,pos)
-    puts "gosu_composition: click #{id}" 
     return unless id == GosuComponent::LEFT
     if active?
       @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
@@ -54,8 +52,12 @@ class GosuComposition < GosuComponent
     [@scale_point,@center].reject(&:nil?)
   end
 
+  def get_dynamic_points
+    @points
+  end
+
   def get_active_points
-    get_instance_points().concat(@points)
+    get_instance_points().concat(get_dynamic_points())
   end
 
   def update_shift
@@ -63,18 +65,20 @@ class GosuComposition < GosuComponent
     if last_updated
       @last_modified = last_updated
       new_pos = get_balance_point()
-      @center.set_pos(*new_pos.to_a)
+      @center.set_pos(*new_pos.to_a) unless new_pos.nil?
     else
       shift = (@center - @last_center).to_a
-      get_active_points().each do |p|
-        p.shift(*shift)
+      get_active_points().each do |p| 
+        p.shift(*shift) unless p.object_id==@center.object_id
       end
     end
     @last_center.set_pos(*@center.to_a)
   end
 
   def get_balance_point
-    points = get_active_points()
+    points = get_dynamic_points()
+    return unless points.length>0
+    puts "balanc-len #{points.length}"
     points.reduce(Point.new(0,0)){|memo,obj| memo += obj}/points.length.to_f
   end
 
@@ -86,7 +90,7 @@ class GosuComposition < GosuComponent
     if active?
       get_active_points().any?{|p| p.overlay?(x,y)}
     else
-      get_instance_points().any?{|p| p.overlay?(x,y)} || @end.overlay?(x,y)
+      get_instance_points().any?{|p| p.overlay?(x,y)}
     end
   end
 
@@ -94,9 +98,8 @@ class GosuComposition < GosuComponent
     if active?
       get_active_points().find{|p| p.overlay?(x,y)}
     else
-      get_instance_points().find{|p| p.overlay?(x,y)} || @end.overlay?(x,y)
+      get_instance_points().find{|p| p.overlay?(x,y)}
     end
-    nil
   end
 
   def active?
@@ -105,7 +108,7 @@ class GosuComposition < GosuComponent
 
   def finish
     @edit_mode = false
-    get_active_points().each{|p| p.draw = false}
+    get_dynamic_points().each{|p| p.draw = false}
     @center.draw = false
   end
 

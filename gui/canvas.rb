@@ -2,23 +2,29 @@ require_relative 'gosu_composition'
 require_relative 'gosu_line'
 require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
+require 'byebug'
 
 # require_relative 'app'
 
 class Canvas < GosuComposition
-  attr_accessor :current_composition
-  def initialize(gosu_window)
+  def initialize(gosu_window,left=0,bottom=0,right=0,top=0)
     super('Canvas')
-    @current_composition = nil
+    @left,@bottom,@right,@top = left,bottom,right,top
+    @current_tool_class = nil
+    @current_tool = nil
     # 0,0,App::WIDTH,App::HEIGHT
     @window = gosu_window
     @components = []
-    # @actions = {:line=>self.method(:line_action),
-    #   :polygon=>self.method(:polygon_action),
-    #   :arc=>self.method(:arc_action),
-    #   :point=>self.method(:point_action),
-    #   :freehand=>self.method(:freehand_action)}
-    # @state[:action]=:line
+  end
+
+  def set_tool_class(new_tool_class)
+    @current_tool_class = new_tool_class
+    finish_current()
+  end
+
+  def finish_current
+    @current_tool.finish() if @current_tool
+    @current_tool = nil
   end
 
   # def update_tool(id,state)
@@ -42,15 +48,32 @@ class Canvas < GosuComposition
   end
 
   def onclick(id,state,pos)
-    puts 'canvas: click on'
-    if @current_composition
-      @current_composition = @current_composition.recreate(pos) unless @current_composition.active?
-      @components << @current_composition unless @components.include?(@current_composition)
-      @current_composition.onclick(id,state,pos)
-      puts "canvas propagated click to #{@current_composition.name}"
+    return unless overlay?(*pos)
+    return unless @current_tool_class
+    add_new_tool = @current_tool.nil? || !@current_tool.active?
+    if t = @components.find{|c| c.overlay?(*pos)}
+      @current_tool = t
+      add_new_tool = false
     end
+    if add_new_tool
+      puts "canvas: new component: #{@current_tool_class}"
+      @current_tool = @current_tool_class.new(Point.new(*pos), Point.new(*pos))
+      @components << @current_tool
+    end
+    @current_tool.onclick(id,state,pos)
+    puts "canvas propagated click to #{@current_tool.name}"
     self
   end
+
+  # def click_action(id,pos)
+    
+  # end
+  # def doubleclick_action(id,pos)
+
+  # end
+  # def button_up_action(id,pos)
+
+  # end
 
   def point_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
@@ -148,5 +171,9 @@ class Canvas < GosuComposition
 
   def delete?
     false
+  end
+
+  def overlay?(x,y)
+    (x>@left&&x<@right) && (y>@bottom&&y<@top)
   end
 end

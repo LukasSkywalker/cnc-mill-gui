@@ -58,19 +58,19 @@ class GosuArc < GosuComponent
   def set(start: nil, radius_control: nil,ende: nil,center: nil)
     if start
       @start = start
-      @start.set_color(Gosu::Color::GREEN)
+      @start.color = Gosu::Color::GREEN
     end
     if radius_control
       @radius_control = radius_control
-      @radius_control.set_color(Gosu::Color::BLUE)
+      @radius_control.color = Gosu::Color::BLUE
     end
     if ende
       @end = ende
-      @end.set_color(Gosu::Color::RED)
+      @end.color = Gosu::Color::RED
     end
     if center
       @center = center
-      @center.set_color(Gosu::Color::BLUE)
+      @center.color = Gosu::Color::BLUE
     end
   end
 

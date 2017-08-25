@@ -58,15 +58,14 @@ class Controls <  GosuComponent
 
   def click_action(id,pos)
     return unless id==LEFT
-    puts 'controls: click on'
-    btn = @buttons.find{|btn| btn.overlay?(*pos)}
-    btn.onclick(id,DOWN,pos) if btn
+    b = @buttons.find{|btn| btn.overlay?(*pos)}
+    b.onclick(id,DOWN,pos) if b
   end
 
   def button_up_action(id,pos)
     return unless id==LEFT
-    btn = @buttons.find{|btn| btn.overlay?(*pos)}
-    btn.onclick(id,UP,pos) if btn
+    b = @buttons.find{|btn| btn.overlay?(*pos)}
+    b.onclick(id,UP,pos) if b
   end
 
   def overlay?(x,y)
