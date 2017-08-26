@@ -74,7 +74,7 @@ class GosuComponent
   end
 
   def overlay?(x,y)
-    (x>@left&&x<@right) && (y>@bottom&&y<@top)
+    @draw && (x>@left&&x<@right) && (y>@bottom&&y<@top)
   end
 
   def <=>(other)

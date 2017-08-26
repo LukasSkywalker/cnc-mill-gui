@@ -58,8 +58,6 @@ class GosuComposition < GosuComponent
   end
 
   def get_active_points
-    get_instance_points().concat(get_dynamic_points()).sort().reverse().each{|p| puts p.last_modified}
-    puts "---------------------------"
     get_instance_points().concat(get_dynamic_points()).sort().reverse()
 
   end
@@ -71,7 +69,9 @@ class GosuComposition < GosuComponent
       new_pos = get_balance_point()
       @center.set_pos(*new_pos.to_a) unless new_pos.nil?
     else
-      shift = (@center - @last_center).to_a
+      shift = (@center - @last_center)
+      return if shift.norm == 0
+      shift = shift.to_a
       get_active_points().each do |p| 
         p.shift(*shift) unless p.object_id==@center.object_id
       end
@@ -112,6 +112,7 @@ class GosuComposition < GosuComponent
   def finish
     @edit_mode = false
     get_dynamic_points().each{|p| p.draw = false}
+    @scale_point.draw = false
     @center.draw = false
     @last_click_propagation = nil
   end
@@ -119,6 +120,7 @@ class GosuComposition < GosuComponent
   def activate
     @edit_mode = true
     get_active_points().each{|p| p.draw = true}
+    @scale_point.draw = false
     @center.draw = true
   end
 

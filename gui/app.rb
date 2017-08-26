@@ -7,6 +7,7 @@ require_relative 'event_handler'
 # require_relative 'object_manager'
 require_relative 'canvas'
 require_relative 'controls'
+require_relative 'gosu_freehand'
 
 class App < Gosu::Window
   include EventHandler
@@ -23,7 +24,7 @@ class App < Gosu::Window
     @controls.add_button(Button.new(self,"Line",10,5,button_proc(GosuLine)))
     @controls.add_button(Button.new(self,"Arc",110,5,button_proc(GosuArc)))
     @controls.add_button(Button.new(self,"Polygon",210,5,button_proc(GosuPolygon)))
-    @controls.add_button(Button.new(self,"Freehand",310,5))
+    @controls.add_button(Button.new(self,"Freehand",310,5,button_proc(GosuFreehand)))
 
     # @object_manager = ObjectManager.new
     # @object_manager.add(Point.new(100,100),0)
