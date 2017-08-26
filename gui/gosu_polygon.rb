@@ -13,7 +13,7 @@ class GosuPolygon < GosuComposition
   end
 
   def get_instance_points
-    [@start,@end,@center,@scale_point].reject(&:nil?)
+    [@start,@end,@center,@scale_point].reject(&:nil?).sort().reverse()
   end
 
   def click_action(id,pos)
@@ -92,13 +92,13 @@ class GosuPolygon < GosuComposition
 
 
   def get_balance_point
+    return nil unless @polygon
     start = Point.new(0,0)
     steps = 0
     (0..1).step(10.0/get_path_length()).each do |p|
       start += Point.new(*@polygon.point_on_curve(p).to_a)
       steps += 1
     end
-    puts "steps #{steps}"
     start/steps
   end
 

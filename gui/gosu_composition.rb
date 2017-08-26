@@ -27,19 +27,20 @@ class GosuComposition < GosuComponent
 
   def doubleclick_action(id,pos)
     return unless id == GosuComponent::LEFT
-    puts 'LineDubleClick'
     if active?
       finish()
     else
       activate()
       @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
       @active_controlpoint.onclick(id,DOWN2,pos) if @active_controlpoint
+      puts "Canvas propagated doubleclick to: #{@active_controlpoint.name}"
     end
   end
 
   def button_up_action(id,pos)
     puts 'click off'
     return unless id == GosuComponent::LEFT
+    update_shift()
     if active?
       @last_click_propagation.onclick(id,UP,pos) if @last_click_propagation
     else
@@ -49,15 +50,18 @@ class GosuComposition < GosuComponent
   end
 
   def get_instance_points
-    [@scale_point,@center].reject(&:nil?)
+    [@scale_point,@center].reject(&:nil?).sort().reverse()
   end
 
   def get_dynamic_points
-    @points
+    @points.sort().reverse()
   end
 
   def get_active_points
-    get_instance_points().concat(get_dynamic_points())
+    get_instance_points().concat(get_dynamic_points()).sort().reverse().each{|p| puts p.last_modified}
+    puts "---------------------------"
+    get_instance_points().concat(get_dynamic_points()).sort().reverse()
+
   end
 
   def update_shift
@@ -77,8 +81,7 @@ class GosuComposition < GosuComponent
 
   def get_balance_point
     points = get_dynamic_points()
-    return unless points.length>0
-    puts "balanc-len #{points.length}"
+    return nil unless points.length>0
     points.reduce(Point.new(0,0)){|memo,obj| memo += obj}/points.length.to_f
   end
 
@@ -110,6 +113,7 @@ class GosuComposition < GosuComponent
     @edit_mode = false
     get_dynamic_points().each{|p| p.draw = false}
     @center.draw = false
+    @last_click_propagation = nil
   end
 
   def activate

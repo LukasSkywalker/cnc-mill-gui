@@ -2,21 +2,20 @@ require_relative 'gosu_component'
 
 class Point < GosuComponent
   attr_accessor :color
-  attr_reader :x, :y, :modified, :double_clicked
+  attr_reader :x, :y,:double_clicked
 
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
     super('Point',*get_border(x,y,size))
     @size = size
     set_pos(x,y)
     @color = color
-    @modified = Time.now
   end
 
   def set_pos(x,y)
     @x = x
     @y = y
     @left,@bottom,@right,@top = get_border()
-    @modified = Time.now
+    @last_modified = Time.now
   end
 
   def get_border(x=@x,y=@y,sz=@size)
@@ -40,26 +39,6 @@ class Point < GosuComponent
 
   def ==(other)
     @x==other.x && @y==other.y
-  end
-
-  def <=>(other)
-    @modified <=> other.modified
-  end
-  
-  def >(other)
-    if other.is_a?(Point)
-      @modified > other.modified
-    else
-      @modified > other
-    end
-  end
-  
-  def <(other)
-    if other.is_a?(Point)
-      @modified < other.modified
-    else
-      @modified < other
-    end
   end
 
   def -(other)

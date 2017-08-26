@@ -51,7 +51,7 @@ class Canvas < GosuComposition
     return unless overlay?(*pos)
     return unless @current_tool_class
     add_new_tool = @current_tool.nil? || !@current_tool.active?
-    if t = @components.find{|c| c.overlay?(*pos)}
+    if t = @components.sort().reverse().find{|c| c.overlay?(*pos)}
       @current_tool = t
       add_new_tool = false
     end
@@ -60,20 +60,10 @@ class Canvas < GosuComposition
       @current_tool = @current_tool_class.new(Point.new(*pos), Point.new(*pos))
       @components << @current_tool
     end
-    @current_tool.onclick(id,state,pos)
+    @last_click_propagation =@current_tool.onclick(id,state,pos)
     puts "canvas propagated click to #{@current_tool.name}"
     self
   end
-
-  # def click_action(id,pos)
-    
-  # end
-  # def doubleclick_action(id,pos)
-
-  # end
-  # def button_up_action(id,pos)
-
-  # end
 
   def point_action(id,state)
     return handle_key(id,state) unless @state.has_key?(id)
@@ -82,45 +72,6 @@ class Canvas < GosuComposition
     when DOWN
       pos = [@window.mouse_x,@window.mouse_y]
       @object_manager.add(Point.new(*pos),0)
-    end
-  end
-
-  def line_action(id,state)
-    return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuComponent::LEFT
-    if !@state[:current_line] || !@state[:current_line].active?
-      point = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::BLUE,20.0)
-      @object_manager.add(point,1)
-      # point2 = Point.new(@window.mouse_x,@window.mouse_y,Gosu::Color::RED,20.0)
-      # @object_manager.add(point2,1)
-      @state[:current_line] = GosuLine.new(point)
-      @object_manager.add(@state[:current_line],0)
-    end
-    case state
-    when DOWN
-      point = Point.new(@window.mouse_x,@window.mouse_y)
-      @object_manager.add(point,0)
-      @state[:current_line].add(point)
-    end
-  end
-
-  def polygon_action(id,state)
-    return handle_key(id,state) unless @state.has_key?(id)
-    return unless id==GosuComponent::LEFT
-    if !@state[:current_polygon] || !@state[:current_polygon].active?
-      @state[:current_polygon] = nil
-    end
-    if !@state[:current_polygon]
-      point = Point.new(@window.mouse_x,@window.mouse_y)
-      @object_manager.add(point,1)
-      @state[:current_polygon] = GosuPolygon.new(point)
-      @object_manager.add(@state[:current_polygon],0)
-    end
-    case state
-    when DOWN
-      point = Point.new(@window.mouse_x,@window.mouse_y)
-      @object_manager.add(point,0)
-      @state[:current_polygon].add(point)
     end
   end
 
@@ -160,9 +111,6 @@ class Canvas < GosuComposition
         @state[:current_arc]=nil
       end
     end
-  end
-
-  def freehand_action(id,state)
   end
 
   def update(x,y)

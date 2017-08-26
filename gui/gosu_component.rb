@@ -1,6 +1,7 @@
 require 'byebug'
 class GosuComponent
   attr_accessor :name,:draw
+  attr_reader :last_modified
 
   UP = :up
   DOWN = :down
@@ -74,6 +75,30 @@ class GosuComponent
 
   def overlay?(x,y)
     (x>@left&&x<@right) && (y>@bottom&&y<@top)
+  end
+
+  def <=>(other)
+    if other.is_a?(GosuComponent)
+      @last_modified <=> other.last_modified
+    else
+      @last_modified <=> other
+    end
+  end
+  
+  def >(other)
+    if other.is_a?(GosuComponent)
+      @last_modified > other.last_modified
+    else
+      @last_modified > other
+    end
+  end
+  
+  def <(other)
+    if other.is_a?(GosuComponent)
+      @last_modified < other.last_modified
+    else
+      @last_modified < other
+    end
   end
 
 end
