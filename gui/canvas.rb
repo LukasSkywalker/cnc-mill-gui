@@ -42,7 +42,7 @@ class Canvas < GosuComposition
       @current_tool = @current_tool_class.new(Point.new(*pos), Point.new(*pos))
       @components << @current_tool
     end
-    @last_click_propagation = @current_tool.onclick(id,state,pos)
+    @last_click_propagation = @current_tool.onclick(id,state,pos) unless @current_tool.nil?
     self
   end
   

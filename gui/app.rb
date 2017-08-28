@@ -1,10 +1,8 @@
 require 'gosu'
-require_relative 'path'
 require_relative 'point'
 require_relative 'button'
 
 require_relative 'event_handler'
-# require_relative 'object_manager'
 require_relative 'canvas'
 require_relative 'controls'
 require_relative 'gosu_freehand'

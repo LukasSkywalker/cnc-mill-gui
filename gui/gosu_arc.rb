@@ -104,7 +104,11 @@ class GosuArc < GosuComposition
     return unless @radius_control
     start_v = @start-center
     a2 = start_v.angle_between(@end-center) / 2.0
-    p = @start.rot(center,-a2)
+    if a2==0
+      p = center + (center-@start)
+    else
+      p = @start.rot(center,-a2)
+    end
     @radius_control.set_pos(p.x,p.y)
   end
   
