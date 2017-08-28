@@ -10,13 +10,19 @@
 // The beta coefficient of the thermistor (usually 3000-4000)
 #define BCOEFFICIENT 3950
 // the value of the 'other' resistor
-#define SERIESRESISTOR 10000    
+#define SERIESRESISTOR 10000
+
+#define TARGET_TEMP 40
+#define RELAY_PIN 8
   
 uint16_t samples[NUMSAMPLES];
   
 void setup(void) {
   Serial.begin(9600);
   analogReference(EXTERNAL);
+
+  pinMode(RELAY_PIN, OUTPUT);    // Output mode to drive relay
+  digitalWrite(RELAY_PIN, LOW);  // make sure it is off to start
 }
   
 void loop(void) {
@@ -57,6 +63,14 @@ void loop(void) {
   Serial.print(steinhart);
   Serial.println();
   //Serial.println(" *C");
+
+  if(steinhart < TARGET_TEMP - 3) {
+      digitalWrite(RELAY_PIN, HIGH);
+      Serial.println("on");
+  } else {
+      digitalWrite(RELAY_PIN, LOW);
+      Serial.println("off");
+  }
   
   delay(1000);
 }
