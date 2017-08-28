@@ -25,19 +25,6 @@ class App < Gosu::Window
     @controls.add_button(Button.new(self,"Arc",110,5,button_proc(GosuArc)))
     @controls.add_button(Button.new(self,"Polygon",210,5,button_proc(GosuPolygon)))
     @controls.add_button(Button.new(self,"Freehand",310,5,button_proc(GosuFreehand)))
-
-    # @object_manager = ObjectManager.new
-    # @object_manager.add(Point.new(100,100),0)
-    # @object_manager.add(Point.new(200,100),0)
-    # @object_manager.add_button(ToggleButton.new(self,"Point",0,20,Proc.new {
-    #   @object_manager.add(Point.new(self.mouse_x,self.mouse_y),0)
-    # }), :tools)
-    # @object_manager.add_button(ToggleButton.new(self,"Line",100,20), :tools)
-    # @object_manager.add_button(ToggleButton.new(self,"Arc",200,20), :tools)
-    # @object_manager.add_button(ToggleButton.new(self,"Polygon",300,20), :tools)
-    # @object_manager.add_button(ToggleButton.new(self,"Freehand",400,20), :tools)
-    # @object_manager.add_button(ToggleButton.new(self,"Select",500,20))
-    # @object_manager.add(Canvas.new(self,@object_manager),-999)
   end
 
   def button_proc(tool_class)
@@ -63,6 +50,7 @@ class App < Gosu::Window
   def needs_cursor?
     true
   end
+
 end
 
 App.new.show

@@ -34,7 +34,7 @@ class Controls <  GosuComponent
     request = false
     @buttons.each do |btn|
       btn.update(x,y)
-      if btn.delete?
+      if btn.delete_request
         to_delete << btn
       elsif btn.selfautocracy_request
         request = true

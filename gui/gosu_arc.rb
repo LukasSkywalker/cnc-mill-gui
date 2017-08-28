@@ -1,84 +1,61 @@
-require_relative 'gosu_component'
+require_relative 'gosu_composition'
 require_relative 'point'
 require_relative '../sketch/arc'
+require 'byebug'
 
-class GosuArc < GosuComponent
-  def initialize
-    super('Arc',0,0,0,0)
+class GosuArc < GosuComposition
+  def initialize(center_point,scale_point)
+    super('Arc',center_point,scale_point)
     @start=@center=@end=nil
-    @deleted = false
-    @last_center = nil
     @edit_mode = true
   end
 
+  def get_instance_points
+    [@start,@end,@center,@scale_point,@radius_control].reject(&:nil?).sort().reverse()
+  end
+
+  def get_dynamic_points
+    []
+  end
 
   def click_action(id,pos)
-    return unless id == LEFT
     if active?
-      @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
-      @active_controlpoint.onclick(id,DOWN,pos)
+      if get_active_points().any?{|p| p.overlay?(*pos)} && @end
+        @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
+      elsif id == GosuComponent::LEFT
+        if @start.nil?
+          @radius_control = Point.new(*pos)
+          @start = Point.new(*pos,Gosu::Color::GREEN)
+          @active_controlpoint = @end = Point.new(*pos,Gosu::Color::RED)
+        elsif @center.nil?
+          @active_controlpoint = @center = Point.new(*pos)
+          update_radius_control(@center)
+          @last_center = Point.new(*@center.to_a)
+          # finish()
+        end
+      end
     else
-      @shift_mode = true
-    end  
-  end
-
-  def get_active_points
-    [@start,@end,@center].reject(&:nil?)
-  end
-
-  def doubleclick_action(id,pos)
-    return unless id == GosuComponent::LEFT
-    if active?
-      @edit_mode = false
-      @start.draw = @end.draw = false
-    else
-      @edit_mode = true
-      @active_controlpoint = [@start,@stop,@center].find{|p| p.overlay?(*pos)}
-      @active_controlpoint.onclick(id,DOWN2,pos) if @active_controlpoint
-      @start.draw = @end.draw = true
+      @shift_mode = id == GosuComponent::LEFT
+      @active_controlpoint = get_instance_points().find{|p| p.overlay?(*pos)}
     end
-  end
-
-  def overlay?(x,y)
-    if active?
-      get_active_points().any?{|p| p.overlay?(x,y)}
-    else
-      @center.overlay?(x,y) unless @center.nil?
-    end
+    @last_click_propagation = @active_controlpoint.onclick(id,DOWN,pos) if @active_controlpoint
   end
 
   def active?
     @edit_mode
   end
 
-  def delete?
-    @deleted
-  end
-
-  def set(start: nil, radius_control: nil,ende: nil,center: nil)
-    if start
-      @start = start
-      @start.color = Gosu::Color::GREEN
-    end
-    if radius_control
-      @radius_control = radius_control
-      @radius_control.color = Gosu::Color::BLUE
-    end
-    if ende
-      @end = ende
-      @end.color = Gosu::Color::RED
-    end
-    if center
-      @center = center
-      @center.color = Gosu::Color::BLUE
-    end
-  end
-
   def update(x,y)
+    get_active_points().each{|p| p.update(x,y)}
     return if @start.nil?
     update_deleted()
+    draw(x,y)
+    center = @center.nil? ? Point.new(x,y) : @center
+    update_control_points(@center)
+  end
+  
+  def draw(x,y)
     return if !@draw
-
     angle = 2*Math::PI
     last_pos = Point.new(@start.x,@start.y)
     center = @center.nil? ? Point.new(x,y) : @center
@@ -98,7 +75,6 @@ class GosuArc < GosuComponent
       last_pos = pos
     end
     Gosu.draw_line(*last_pos.to_a,Gosu::Color::RED,@end.x,@end.y, Gosu::Color::RED)
-    update_control_points(center)
   end
   
   def update_control_points(center)
@@ -109,19 +85,14 @@ class GosuArc < GosuComponent
     update_radius_control(center)
     r
   end
-  
-  def update_shift
-    return unless @center
-    @last_center ||= Point.new(*@center.to_a)
-    shift = (@center - @last_center).to_a
-    @start.shift(*shift)
-    @end.shift(*shift)
-    @radius_control.shift(*shift)
-    @last_center.set_pos(*@center.to_a)
-  end
 
   def radius(center)
-    (@radius_control-center).norm
+    return 0 unless @start
+    if @radius_control
+      (@radius_control-center).norm
+    else
+      (@start-center).norm
+    end
   end
 
   def update_radius(center,r)
@@ -130,6 +101,7 @@ class GosuArc < GosuComponent
   end
 
   def update_radius_control(center)
+    return unless @radius_control
     start_v = @start-center
     a2 = start_v.angle_between(@end-center) / 2.0
     p = @start.rot(center,-a2)
@@ -137,12 +109,8 @@ class GosuArc < GosuComponent
   end
   
   def update_deleted
-    [@start,@center,@end].each do |p|
-      @deleted = true if p && p.delete?
+    [@start,@center,@end,@scale_point,@radius_control].each do |p|
+      @delete_request = true if p && p.delete_request
     end
-  end
-
-  def complete?
-    @start&&@center
   end
 end

@@ -1,7 +1,7 @@
 require_relative 'gosu_component'
 
 class Point < GosuComponent
-  attr_accessor :color
+  attr_accessor :color, :size
   attr_reader :x, :y,:double_clicked
 
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
@@ -9,6 +9,11 @@ class Point < GosuComponent
     @size = size
     set_pos(x,y)
     @color = color
+  end
+
+  def set_size_color(size,color)
+    @size=size
+    @color=color
   end
 
   def set_pos(x,y)

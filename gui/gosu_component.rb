@@ -1,7 +1,7 @@
 require 'byebug'
 class GosuComponent
   attr_accessor :name,:draw
-  attr_reader :last_modified
+  attr_reader :last_modified, :delete_request
 
   UP = :up
   DOWN = :down
@@ -14,19 +14,16 @@ class GosuComponent
   def initialize(name,left=0,bottom=0,right=0,top=0)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
-    @state = {LEFT=>false,RIGHT=>false,KEY=>[],CHANGED=>nil,:finished=>false}
+    @state = {LEFT=>false,RIGHT=>false,CHANGED=>nil}
     @last_modified = Time.now
     @edit_mode = false
     @draw = true
+    @delete_request = false
   end
 
   def active?
     # @state[LEFT]
     @edit_mode
-  end
-
-  def delete?
-    @state[RIGHT] && @state[KEY].include?(:ctrl)
   end
 
   def onclick(id,state,pos)
@@ -37,7 +34,6 @@ class GosuComponent
       @state[id] = true
       click_action(id,pos)
     when DOWN2
-      puts'down2'
       @state[CHANGED] = DOWN2 if !@state[id]
       @state[id] = true
       doubleclick_action(id,pos)
@@ -51,16 +47,20 @@ class GosuComponent
 
   def click_action(id,pos)
     return unless id==LEFT
-    puts 'gosu_component: click on'
+    puts "#{self.class}: click on"
     @edit_mode = true
   end
-  def doubleclick_action(id,pos)    
+  def doubleclick_action(id,pos)
+    puts "#{self.class}: doubleclick"  
   end
   def button_up_action(id,pos)
-    puts 'click off'
-    return unless id==LEFT
-    puts 'click off'
-    @edit_mode = false
+    puts "#{self.class}: click off"
+    case id
+    when GosuComponent::LEFT
+      @edit_mode = false
+    when GosuComponent::RIGHT
+      @delete_request = @state[:ctrl]
+    end
   end
 
   def update(x,y)

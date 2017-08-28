@@ -11,17 +11,16 @@ class GosuLine < GosuComposition
   end
 
   def click_action(id,pos)
-    return unless id == GosuComponent::LEFT
     puts "line: click"
     if active?
       if get_active_points().any?{|p| p.overlay?(*pos)} && @points.length > 0
         @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
-      else
+      elsif id == GosuComponent::LEFT
         @active_controlpoint = Point.new(*pos)
         add(@active_controlpoint)
       end
     else
-      @shift_mode = true
+      @shift_mode = id == GosuComponent::LEFT
       @active_controlpoint = get_dynamic_points().find{|p| p.overlay?(*pos)}
     end
     @last_click_propagation = @active_controlpoint.onclick(id,DOWN,pos) if @active_controlpoint
@@ -64,10 +63,12 @@ class GosuLine < GosuComposition
   def update_deleted
     to_del=[]
     @points.each do |p|
-      to_del<<p if p.delete?
+      to_del<<p if p.delete_request
     end
     to_del.each do |p|
       @points.delete(p)
     end
+    @delete_request = true if !active? && @points.length<=1
+    to_del.length>0
   end
 end

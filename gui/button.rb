@@ -49,11 +49,7 @@ class Button < GosuComponent
   def update(x,y)
     draw()
   end
-
-  def delete?
-    false
-  end
-
+  
   def draw
     Gosu.draw_rect(@x,@y, SIZE.first,SIZE.last, active? ? Gosu::Color::GREEN : Gosu::Color::RED,-999)
     @font.draw(@text, @x+5,@y+5,1, 1.0, 1.0, Gosu::Color::WHITE)
