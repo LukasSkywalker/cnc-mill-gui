@@ -1,21 +1,25 @@
+#define TEMP_INTERVAL 2
 int targetTemp = 25;
 
+unsigned long lastTime;
+
 void setup() {
+  Serial.begin(9600);
+  lastTime = millis();
   setupRotary();
   setupSevseg();
   setupExtruder();
   setupTemp();
 }
 
-int count = 0;
-
 void loop() {
-  count++;
+  unsigned long currentTime = millis();
+  unsigned long deltaTime = (currentTime - lastTime);
+  Serial.println(deltaTime);
   loopRotary();
   loopSevseg();
   loopExtruder();
-  if(count >= 100) {
-    count = 0;
+  if(deltaTime % 2000 <= 2000) {
     loopTemp();
   }
 }
@@ -26,20 +30,22 @@ void loop() {
 
 #define ROTARY_A 52
 #define ROTARY_B 50
+#define ROTARY_DELAY 500
 
 int rotaryValue = 25;
 int rotaryState;
 int rotaryLastState;
+int lastChange = 0;
 
 void setupRotary() {
   pinMode (ROTARY_A, INPUT);
   pinMode (ROTARY_B, INPUT);
-       
-  Serial.begin (9600);
+
   rotaryLastState = digitalRead(ROTARY_A);  
 }
 
 void loopRotary() {
+  lastChange++;
   rotaryState = digitalRead(ROTARY_A); // Reads the "current" state of the outputA
   if (rotaryState != rotaryLastState){     
     if (digitalRead(ROTARY_B) != rotaryState) { 
@@ -47,7 +53,8 @@ void loopRotary() {
     } else {
       rotaryValue --;
     }
-    Serial.print("Rotary Value: ");
+    lastChange = 0;
+    Serial.print("Rotary: ");
     Serial.println(rotaryValue);
 
     sevsegPrint(rotaryValue);
@@ -68,7 +75,7 @@ int sevSegLast = 0;
 void setupSevseg() {
   byte numDigits = 3;
   byte digitPins[] = {23, 24, 25};
-  byte segmentPins[] = {40, 36, 30, 32, 34, 38, 28};
+  byte segmentPins[] = {32, 28, 36, 38, 40, 30, 34};
   bool resistorsOnSegments = false; // 'false' means resistors are on digit pins
   byte hardwareConfig = COMMON_CATHODE; // See README.md for options
   bool updateWithDelays = false; // Default. Recommended
@@ -79,8 +86,8 @@ void setupSevseg() {
 }
 
 void loopSevseg() {
-  sevseg.setNumber(sevSegLast);
   sevseg.refreshDisplay();
+  sevseg.setNumber(sevSegLast);
 }
 
 void sevsegPrint(int value) {
@@ -136,10 +143,14 @@ void loopTemp() {
   steinhart = 1.0 / steinhart;                 // Invert
   steinhart -= 273.15;                         // convert to C
   
-  Serial.print("Temperature: ");
+  Serial.print("Temp  : ");
   Serial.println((int)steinhart);
 
-  sevsegPrint((int)steinhart);
+  if(lastChange > ROTARY_DELAY) {
+    int temp = (int)steinhart;
+    sevsegPrint(temp);
+    lastChange = 0;
+  }
 
   if(steinhart < targetTemp - 5) {
       digitalWrite(RELAY_PIN, HIGH);
@@ -153,11 +164,11 @@ void loopTemp() {
 
 ////////////// EXTRUDER //////////////
 
-#define MOTOR_STP 3
 #define MOTOR_DIR 2
-#define MOTOR_MS1 6
-#define MOTOR_MS2 5
+#define MOTOR_STP 3
 #define MOTOR_MS3 4
+#define MOTOR_MS2 5
+#define MOTOR_MS1 6
 #define MOTOR_EN  7
 
 
