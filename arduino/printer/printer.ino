@@ -1,27 +1,26 @@
+#include <StaticThreadController.h>
+#include <Thread.h>
+#include <ThreadController.h>
+
 #define TEMP_INTERVAL 2
 int targetTemp = 25;
 
-unsigned long lastTime;
+ThreadController controller = ThreadController();
 
 void setup() {
   Serial.begin(9600);
-  lastTime = millis();
   setupRotary();
   setupSevseg();
   setupExtruder();
-  setupTemp();
+  Thread tempThread = setupTemp();
+  controller.add(&tempThread);
 }
 
 void loop() {
-  unsigned long currentTime = millis();
-  unsigned long deltaTime = (currentTime - lastTime);
-  Serial.println(deltaTime);
   loopRotary();
   loopSevseg();
   loopExtruder();
-  if(deltaTime % 2000 <= 2000) {
-    loopTemp();
-  }
+  controller.run();
 }
 
 
@@ -108,11 +107,16 @@ void sevsegPrint(int value) {
 
 uint16_t samples[NUMSAMPLES];
 
-void setupTemp() {
+Thread setupTemp() {
   analogReference(EXTERNAL);
 
   pinMode(RELAY_PIN, OUTPUT);    // Output mode to drive relay
   digitalWrite(RELAY_PIN, LOW);  // make sure it is off to start
+
+  Thread myThread = Thread();
+  myThread.setInterval(2000);
+  myThread.onRun(loopTemp);
+  return myThread;
 }
   
 void loopTemp() {
