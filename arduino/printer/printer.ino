@@ -124,6 +124,7 @@ void sevsegPrint(int value) {
 #define SERIESRESISTOR 10000
 
 #define RELAY_PIN 8
+#define LED_PIN 53
 
 uint16_t samples[NUMSAMPLES];
 
@@ -132,6 +133,9 @@ Thread setupTemp() {
 
   pinMode(RELAY_PIN, OUTPUT);    // Output mode to drive relay
   digitalWrite(RELAY_PIN, LOW);  // make sure it is off to start
+
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
 
   Thread myThread = Thread();
   myThread.setInterval(2000);
@@ -178,12 +182,18 @@ void loopTemp() {
     lastChange = 0;
   }
 
-  if(steinhart < targetTemp - 5) {
-      digitalWrite(RELAY_PIN, HIGH);
-      if(DEBUG) { Serial.println("on"); }
+  if(steinhart <= 0) {
+    digitalWrite(RELAY_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+    if(DEBUG) { Serial.println("Temp measurement error"); }
+  } else if(steinhart < targetTemp - 5) {
+    digitalWrite(RELAY_PIN, HIGH);
+    digitalWrite(LED_PIN, HIGH);
+    if(DEBUG) { Serial.println("on"); }
   } else {
-      digitalWrite(RELAY_PIN, LOW);
-      if(DEBUG) { Serial.println("off"); }
+    digitalWrite(RELAY_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+    if(DEBUG) { Serial.println("off"); }
   }
 }
 
@@ -211,8 +221,10 @@ Thread setupExtruder() {
   pinMode(MOTOR_EN, OUTPUT);
   resetBEDPins();
 
+  extruderSmallStepPrepare();
+
   Thread myThread = Thread();
-  myThread.setInterval(20);
+  myThread.setInterval(10);
   myThread.onRun(loopExtruder);
   return myThread;
 }
@@ -228,16 +240,19 @@ void resetBEDPins()
 }
 
 void loopExtruder() {
-  digitalWrite(MOTOR_EN, LOW);
   extruderSmallStep();
 }
 
-void extruderSmallStep() {
+void extruderSmallStepPrepare() {
   digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
   digitalWrite(MOTOR_MS1, HIGH); //Pull MS1,MS2, and MS3 high to set logic to 1/16th microstep resolution
   digitalWrite(MOTOR_MS2, HIGH);
   digitalWrite(MOTOR_MS3, HIGH);
-   
+
+  digitalWrite(MOTOR_EN, LOW);
+}
+
+void extruderSmallStep() {
   digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
   delay(1);
   digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
