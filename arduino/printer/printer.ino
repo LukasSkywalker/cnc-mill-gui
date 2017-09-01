@@ -11,15 +11,15 @@ void setup() {
   Serial.begin(9600);
   setupRotary();
   setupSevseg();
-  setupExtruder();
   Thread tempThread = setupTemp();
+  Thread extruderThread = setupExtruder();
   controller.add(&tempThread);
+  controller.add(&extruderThread);
 }
 
 void loop() {
   loopRotary();
   loopSevseg();
-  loopExtruder();
   controller.run();
 }
 
@@ -180,7 +180,7 @@ int x;
 int y;
 int state;
 
-void setupExtruder() {
+Thread setupExtruder() {
   pinMode(MOTOR_STP, OUTPUT);
   pinMode(MOTOR_DIR, OUTPUT);
   pinMode(MOTOR_MS1, OUTPUT);
@@ -188,6 +188,11 @@ void setupExtruder() {
   pinMode(MOTOR_MS3, OUTPUT);
   pinMode(MOTOR_EN, OUTPUT);
   resetBEDPins();
+
+  Thread myThread = Thread();
+  myThread.setInterval(20);
+  myThread.onRun(loopExtruder);
+  return myThread;
 }
 
 void resetBEDPins()
@@ -202,34 +207,17 @@ void resetBEDPins()
 
 void loopExtruder() {
   digitalWrite(MOTOR_EN, LOW);
-  //extruderStepForward(1);
   extruderSmallStep();
 }
-
-void extruderStepForward(int steps) {
-  Serial.println(steps);
-  digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
-  for(x= 0; x<steps; x++)  //Loop the forward stepping enough times for motion to be visible
-  {
-    digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
-    delay(1);
-    digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
-    delay(1);
-  }  
-}
-
 
 void extruderSmallStep() {
   digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
   digitalWrite(MOTOR_MS1, HIGH); //Pull MS1,MS2, and MS3 high to set logic to 1/16th microstep resolution
   digitalWrite(MOTOR_MS2, HIGH);
   digitalWrite(MOTOR_MS3, HIGH);
-  for(x= 1; x<2; x++)  //Loop the forward stepping enough times for motion to be visible
-  {
-    digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
-    delay(1);
-    digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
-    delay(1);
-  }
+   
+  digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
+  delay(1);
+  digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
 }
 
