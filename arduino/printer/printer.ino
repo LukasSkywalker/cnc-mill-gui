@@ -36,7 +36,7 @@ void loop() {
 #define ROTARY_BUTTON 48
 #define ROTARY_DELAY 2000
 
-int rotaryValue = 25;
+int rotaryValue = 20;
 int rotaryState;
 int rotaryLastState;
 int lastChange = 0;
@@ -61,7 +61,7 @@ void loopRotary() {
       rotaryValue --;
     }
 
-    targetTemp = rotaryValue;
+    targetTemp = rotaryValue * 10;
 
     rotaryDisplayTarget();
   } 
@@ -244,7 +244,7 @@ void loopExtruder() {
 }
 
 void extruderSmallStepPrepare() {
-  digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
+  digitalWrite(MOTOR_DIR, HIGH); //Pull direction pin low to move "forward"
   digitalWrite(MOTOR_MS1, HIGH); //Pull MS1,MS2, and MS3 high to set logic to 1/16th microstep resolution
   digitalWrite(MOTOR_MS2, HIGH);
   digitalWrite(MOTOR_MS3, HIGH);
@@ -252,9 +252,15 @@ void extruderSmallStepPrepare() {
   digitalWrite(MOTOR_EN, LOW);
 }
 
+int extruderCounter = 0;
+
 void extruderSmallStep() {
+  extruderCounter++;
+  //if(extruderCounter < 5) { return; }
+  extruderCounter = 0;
   digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
   delay(1);
   digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
+  delay(1);
 }
 
