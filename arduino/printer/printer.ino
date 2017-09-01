@@ -3,7 +3,11 @@
 #include <ThreadController.h>
 
 #define TEMP_INTERVAL 2
+#define DEBUG true
+
 int targetTemp = 25;
+
+
 
 ThreadController controller = ThreadController();
 
@@ -29,7 +33,8 @@ void loop() {
 
 #define ROTARY_A 52
 #define ROTARY_B 50
-#define ROTARY_DELAY 500
+#define ROTARY_BUTTON 48
+#define ROTARY_DELAY 2000
 
 int rotaryValue = 25;
 int rotaryState;
@@ -39,6 +44,9 @@ int lastChange = 0;
 void setupRotary() {
   pinMode (ROTARY_A, INPUT);
   pinMode (ROTARY_B, INPUT);
+  pinMode(ROTARY_BUTTON, INPUT);
+
+  digitalWrite(ROTARY_BUTTON, HIGH);
 
   rotaryLastState = digitalRead(ROTARY_A);  
 }
@@ -52,14 +60,26 @@ void loopRotary() {
     } else {
       rotaryValue --;
     }
-    lastChange = 0;
-    Serial.print("Rotary: ");
-    Serial.println(rotaryValue);
 
-    sevsegPrint(rotaryValue);
     targetTemp = rotaryValue;
+
+    rotaryDisplayTarget();
   } 
   rotaryLastState = rotaryState;
+  
+  if(digitalRead(ROTARY_BUTTON) == 0) {
+    rotaryDisplayTarget();  
+  }
+}
+
+void rotaryDisplayTarget() {
+  lastChange = 0;
+  if(DEBUG) {
+    Serial.print("Rotary: ");
+    Serial.println(targetTemp);
+  }
+
+  sevsegPrint(targetTemp);
 }
 
 
@@ -99,7 +119,7 @@ void sevsegPrint(int value) {
 #define THERMISTORPIN A0
 #define THERMISTORNOMINAL 100000
 #define TEMPERATURENOMINAL 25   
-#define NUMSAMPLES 5
+#define NUMSAMPLES 3
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 
@@ -146,10 +166,12 @@ void loopTemp() {
   steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
   steinhart = 1.0 / steinhart;                 // Invert
   steinhart -= 273.15;                         // convert to C
-  
-  Serial.print("Temp  : ");
-  Serial.println((int)steinhart);
 
+  if(DEBUG) {
+    Serial.print("Temp  : ");
+    Serial.println((int)steinhart);
+  }
+  
   if(lastChange > ROTARY_DELAY) {
     int temp = (int)steinhart;
     sevsegPrint(temp);
@@ -158,10 +180,10 @@ void loopTemp() {
 
   if(steinhart < targetTemp - 5) {
       digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("on");
+      if(DEBUG) { Serial.println("on"); }
   } else {
       digitalWrite(RELAY_PIN, LOW);
-      Serial.println("off");
+      if(DEBUG) { Serial.println("off"); }
   }
 }
 
