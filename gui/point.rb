@@ -9,6 +9,7 @@ class Point < GosuComponent
     @size = size
     set_pos(x,y)
     @color = color
+    @connected_point = nil
   end
 
   def set_size_color(size,color)
@@ -16,11 +17,45 @@ class Point < GosuComponent
     @color=color
   end
 
+  def connect_point(point, insert=true)
+    raise 'point has to be a Point' unless point.is_a?(Point)
+    if @connected_point
+      p = @connected_point
+      @connected_point = point
+      point.connect_point(p, false)      
+    elsif insert
+      @connected_point = point.connect_point(self, false)
+    else
+      @connected_point = point
+    end
+    point
+  end
+
+  def disconnect_points(initiator=nil)
+    return unless @connected_point || self==initiator
+    @connected_point.disconnect_points(initiator.nil? ? self : initiator)
+    @connected_point = nil
+  end
+
+  def update_connected(x,y,initiator)
+    return if self==initiator
+    @connected_point.update_connected(x,y,initiator)
+  end
+
   def set_pos(x,y)
+    update_pos(x,y)
+    update_connected(x,y,self) if @connected_point
+  end
+
+  def snap_mode?
+    active? && @state[:ctrl]
+  end
+ 
+  private def update_pos(x,y)
     @x = x
     @y = y
-    @left,@bottom,@right,@top = get_border()
-    @last_modified = Time.now
+    @left,@top,@right,@bottom = get_border()
+    @last_modified = Time.now    
   end
 
   def get_border(x=@x,y=@y,sz=@size)
@@ -72,6 +107,10 @@ class Point < GosuComponent
 
   def norm
     Math.sqrt(@x*@x+@y*@y)
+  end
+
+  def distance_to(point)
+    (self-point).norm
   end
 
   def normalize

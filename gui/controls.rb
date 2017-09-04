@@ -3,8 +3,8 @@ require_relative 'push_button'
 require_relative 'gosu_component'
 
 class Controls <  GosuComponent
-  def initialize(name,left=0,bottom=0,right=0,top=0)
-    super(name,left,bottom,right,top)
+  def initialize(name,left=0,top=0,right=0,bottom=0)
+    super(name,left,top,right,bottom)
     @buttons = []
   end
 
@@ -14,7 +14,7 @@ class Controls <  GosuComponent
   end
 
   def draw
-    Gosu.draw_rect(@left,@bottom, @right-@left,@top-@bottom, Gosu::Color::GRAY,-999)
+    Gosu.draw_rect(@left,@top, @right-@left,@bottom-@top, Gosu::Color::GRAY,-999)
     @buttons.each{|b| b.draw}
   end
 

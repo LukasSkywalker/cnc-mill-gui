@@ -1,6 +1,7 @@
 require 'gosu'
 require_relative 'point'
 require_relative 'button'
+require_relative 'picture'
 
 require_relative 'event_handler'
 require_relative 'canvas'
@@ -18,11 +19,15 @@ class App < Gosu::Window
     self.caption = "Hack GUI"
     @first_frame = true
     @canvas = Canvas.new(self,0,40,WIDTH,HEIGHT)
-    @controls = Controls.new('Control Bar', 0,40,WIDTH,0)
+    @canvas.add_picture(Picture.new('/home/bauz/Pictures/flyer01.jpg'))
+    @controls = Controls.new('Control Bar', 0,0,WIDTH,40)
     @controls.add_button(Button.new(self,"Line",10,5,button_proc(GosuLine)))
     @controls.add_button(Button.new(self,"Arc",110,5,button_proc(GosuArc)))
     @controls.add_button(Button.new(self,"Polygon",210,5,button_proc(GosuPolygon)))
     @controls.add_button(Button.new(self,"Freehand",310,5,button_proc(GosuFreehand)))
+    @controls.add_button(Button.new(self,"Select",410,5,button_proc(NilClass)))
+    @controls.add_button(Button.new(self,"Picture",WIDTH-100,5,button_proc(Picture)))
+    
   end
 
   def button_proc(tool_class)

@@ -2,16 +2,23 @@ require_relative 'gosu_composition'
 require_relative 'gosu_line'
 require_relative 'gosu_polygon'
 require_relative 'gosu_arc'
+require_relative 'picture'
 require 'byebug'
 
 class Canvas < GosuComposition
-  def initialize(gosu_window,left=0,bottom=0,right=0,top=0)
+  def initialize(gosu_window,left=0,top=0,right=0,bottom=0)
     super('Canvas')
     @left,@bottom,@right,@top = left,bottom,right,top
     @current_tool_class = nil
     @current_tool = nil
     @window = gosu_window
     @components = []
+  end
+
+  def add_picture(picture)
+    raise 'not a pictrue' unless picture.is_a?(Picture)
+    picture.set_shift(@left,@top)
+    @components << picture  
   end
 
   def set_tool_class(new_tool_class)
@@ -45,10 +52,19 @@ class Canvas < GosuComposition
     @last_click_propagation = @current_tool.onclick(id,state,pos) unless @current_tool.nil?
     self
   end
+
+  def get_possible_snaps(pos)
+    pt = Point.new(*pos)
+    snaps = @components.reduce([]){|mem,val| mem << val.nearest_point_in_range(pt,pt.size)}.reject{|p| p.nil? || !p.draw?}
+    snaps.sort{|p,q| p.distance_to(pt) <=> p.distance_to(pt)}
+  end
   
   def update(x,y)
     update_deleted()
     @components.each{|c| c.update(x,y)}
+    pos = Point.new(x,y)
+    snap = @components.find{|c| c.has_snap_point?}
+    handle_point_snapping(get_possible_snaps(pos).first,snap.get_snap_point()) if snap
   end
 
   def update_deleted
@@ -63,6 +79,6 @@ class Canvas < GosuComposition
   end
 
   def overlay?(x,y)
-    (x>@left&&x<@right) && (y>@bottom&&y<@top)
+    (x>@left&&x<@right) && (y<@bottom&&y>@top)
   end
 end

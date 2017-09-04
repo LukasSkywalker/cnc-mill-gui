@@ -39,11 +39,11 @@ class GosuComposition < GosuComponent
 
   def button_up_action(id,pos)
     puts "#{self.class}: click off: #{id} --> #{@last_click_propagation.name if @last_click_propagation}"
-    update_shift()
     if !active?
       @shift_mode = id==GosuComponent::RIGHT
     end
     @last_click_propagation.onclick(id,UP,pos) if @last_click_propagation
+    update_shift()
   end
 
   def get_instance_points
@@ -56,22 +56,21 @@ class GosuComposition < GosuComponent
 
   def get_active_points
     get_instance_points().concat(get_dynamic_points()).sort().reverse()
-
   end
 
   def update_shift
-    last_updated = get_active_points().find{|p| p > @last_modified}
-    if last_updated
-      @last_modified = last_updated
-      new_pos = get_balance_point()
-      @center.set_pos(*new_pos.to_a) unless new_pos.nil?
-    else
+    last_updated = get_active_points().find{|p| (p <=> @last_modified) > -1}
+    if last_updated == @center
       shift = (@center - @last_center)
       return false if shift.norm == 0
       shift = shift.to_a
       get_active_points().each do |p| 
         p.shift(*shift) unless p.object_id==@center.object_id
       end
+    else
+      @last_modified = last_updated
+      new_pos = get_balance_point()
+      @center.set_pos(*new_pos.to_a) unless new_pos.nil?
     end
     @last_center.set_pos(*@center.to_a) if @center
     true
@@ -95,14 +94,6 @@ class GosuComposition < GosuComponent
     end
   end
 
-  # def get_overlay_object(x, y)
-  #   if active?
-  #     get_active_points().find{|p| p.overlay?(x,y)}
-  #   else
-  #     get_instance_points().find{|p| p.overlay?(x,y)}
-  #   end
-  # end
-
   def active?
     @edit_mode
   end
@@ -111,7 +102,7 @@ class GosuComposition < GosuComponent
     @edit_mode = false
     get_dynamic_points().each{|p| p.draw = false}
     @scale_point.draw = false
-    @center.draw = false
+    @center.draw = false if @center
     @last_click_propagation = nil
   end
 
@@ -122,5 +113,29 @@ class GosuComposition < GosuComponent
     @center.draw = true
   end
 
+  def nearest_point_in_range(point, radius)
+    points = get_active_points().find_all{ |p| p.distance_to(point) <= radius }
+    points.sort{|p,q| p.distance_to(point) <=> q.distance_to(point)}
+    points.first
+  end
+
+  def has_snap_point?
+    get_active_points().reject{|p| !p.draw?}.any?{|p| p.snap_mode?}
+  end
+
+
+  def get_snap_point
+    get_active_points().reject{|p| !p.draw?}.find{|p| p.snap_mode?}
+  end
+
+  def handle_point_snapping(snap_candidate, snap)
+    return unless snap_candidate
+    return unless snap
+    # if click_off
+      # @last_click_propagation.connect_point(snap_candidate)
+    # else
+      snap.set_pos(*snap_candidate.to_a)
+    # end
+  end
 
 end

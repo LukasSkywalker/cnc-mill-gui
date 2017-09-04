@@ -11,10 +11,10 @@ class GosuComponent
   CHANGED = :changed
   KEY = :key
 
-  def initialize(name,left=0,bottom=0,right=0,top=0)
+  def initialize(name,left=0,top=0,right=0,bottom=0)
     @name = name
     @left,@bottom,@right,@top = left,bottom,right,top
-    @state = {LEFT=>false,RIGHT=>false,CHANGED=>nil}
+    @state = {LEFT=>false,RIGHT=>false,CHANGED=>nil, :ctrl => nil}
     @last_modified = Time.now
     @edit_mode = false
     @draw = true
@@ -47,14 +47,14 @@ class GosuComponent
 
   def click_action(id,pos)
     return unless id==LEFT
-    puts "#{self.class}: click on"
     @edit_mode = true
   end
+
   def doubleclick_action(id,pos)
-    puts "#{self.class}: doubleclick"  
+    puts "#{self.class}: #{id}"  
   end
   def button_up_action(id,pos)
-    puts "#{self.class}: click off"
+    puts "#{self.class}: #{id} off"
     case id
     when GosuComponent::LEFT
       @edit_mode = false
@@ -73,8 +73,12 @@ class GosuComponent
     raise 'not implemented'
   end
 
+  def draw?
+    @draw
+  end
+
   def overlay?(x,y)
-    @draw && (x>@left&&x<@right) && (y>@bottom&&y<@top)
+    @draw && (x>@left&&x<@right) && (y<@bottom&&y>@top)
   end
 
   def <=>(other)
