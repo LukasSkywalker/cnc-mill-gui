@@ -7,7 +7,8 @@
 
 int targetTemp = 25;
 
-
+long sysLastMillis = 0;
+long sysLoops = 0;
 
 ThreadController controller = ThreadController();
 
@@ -22,6 +23,16 @@ void setup() {
 }
 
 void loop() {
+  long sysCurrentMillis = millis();
+  sysLoops++;
+
+  if(sysCurrentMillis - sysLastMillis > 1000){
+>    Serial.println(sysLoops);
+   
+    sysLastMillis = sysCurrentMillis;
+    sysLoops = 0;
+  }
+  
   loopRotary();
   loopSevseg();
   controller.run();
@@ -36,7 +47,7 @@ void loop() {
 #define ROTARY_BUTTON 48
 #define ROTARY_DELAY 2000
 
-int rotaryValue = 20;
+int rotaryValue = 2;
 int rotaryState;
 int rotaryLastState;
 int lastChange = 0;
