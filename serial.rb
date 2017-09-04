@@ -15,7 +15,6 @@ def run_program(code)
         sleep(1)
         output = sp.gets
         puts output if output && output.start_with?("<")
-        sp.write("?")
       end
       puts "< #{output}"
     end
