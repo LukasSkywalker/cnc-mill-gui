@@ -27,7 +27,7 @@ void loop() {
   sysLoops++;
 
   if(sysCurrentMillis - sysLastMillis > 1000){
->    Serial.println(sysLoops);
+    Serial.println(sysLoops);
    
     sysLastMillis = sysCurrentMillis;
     sysLoops = 0;
