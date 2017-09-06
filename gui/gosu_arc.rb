@@ -46,12 +46,12 @@ class GosuArc < GosuComposition
   end
 
   def update(x,y)
-    get_active_points().each{|p| p.update(x,y)}
     return if @start.nil?
     update_deleted()
     draw(x,y)
-    center = @center.nil? ? Point.new(x,y) : @center
-    update_control_points(@center)
+    update_control_points()
+    update_rot_scale()           
+    get_active_points().each{|p| p.update(x,y)}
   end
   
   def draw(x,y)
@@ -61,11 +61,10 @@ class GosuArc < GosuComposition
     center = @center.nil? ? Point.new(x,y) : @center
     return if @start==center
     if @start!=@end
-      angle = (@start-center).angle_between(@end-center)
-      angle = 2*Math::PI - angle if angle < 0
+      angle = (@start-center).angle_between(@end-center).abs
     end
     r = radius(center)
-    angle_offset = (@start-center).angle_offset
+    angle_offset = (@start-center).angle_offset.abs
     (0..angle).step(Arc::PRECISION_RAD) do |d|
       d = d-angle_offset
       cos = r*Math.cos(d)
@@ -77,12 +76,12 @@ class GosuArc < GosuComposition
     Gosu.draw_line(*last_pos.to_a,Gosu::Color::RED,@end.x,@end.y, Gosu::Color::RED)
   end
   
-  def update_control_points(center)
-    return 0 unless center
+  def update_control_points
+    return 0 unless @center
     update_shift()
-    r = radius(center)
-    update_radius(center,r)
-    update_radius_control(center)
+    r = radius(@center)
+    update_radius(@center,r)
+    update_radius_control(@center)
     r
   end
 
@@ -103,7 +102,7 @@ class GosuArc < GosuComposition
   def update_radius_control(center)
     return unless @radius_control
     start_v = @start-center
-    a2 = start_v.angle_between(@end-center) / 2.0
+    a2 = start_v.angle_between(@end-center).abs / 2.0
     if a2==0
       p = center + (center-@start)
     else

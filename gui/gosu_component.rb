@@ -53,9 +53,9 @@ class GosuComponent
   def doubleclick_action(id,pos)
     puts "#{self.class}: #{id}"  
   end
-  
+
   def button_up_action(id,pos)
-    puts "#{self.class}: #{id} off"
+    puts "#{self.class}-#{@name}: #{id} off"
     case id
     when GosuComponent::LEFT
       @edit_mode = false
@@ -76,6 +76,11 @@ class GosuComponent
 
   def draw?
     @draw
+  end
+
+
+  def draw_mode(can_draw)
+    @draw = can_draw
   end
 
   def overlay?(x,y)

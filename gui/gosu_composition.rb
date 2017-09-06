@@ -7,10 +7,12 @@ class GosuComposition < GosuComponent
     @center.color = Gosu::Color::BLUE
     @center.can_connect = false
     @scale_point = scale_point
-    @scale_point.color = Gosu::Color::GREEN
+    @scale_point.color = Gosu::Color::RED
     @scale_point.draw = false
+    @scale_point.name = 'Scale'
     @scale_point.can_connect = false
     @last_center = Point.new(*center.to_a)
+    @last_scale_point = Point.new(*scale_point.to_a)
     @active_controlpoint = nil
     @shift_mode = false
     @last_click_propagation = nil
@@ -73,11 +75,31 @@ class GosuComposition < GosuComponent
       @last_modified = last_updated
       new_pos = get_balance_point()
       @center.set_pos(*new_pos.to_a) unless new_pos.nil?
+      if @center && @scale_point && !@scale_point.active?
+        @scale_point.set_pos(*(@center+Point.new(40,0)).to_a)
+        @last_scale_point.set_pos(*@scale_point.to_a)
+        @scale_point.draw = true
+      end
     end
     @last_center.set_pos(*@center.to_a) if @center
     true
   end
 
+  def update_rot_scale
+    return unless @scale_point
+    return if @last_scale_point==@scale_point
+    df_rot = (@last_scale_point-@center).angle_between(@scale_point-@center)
+    df_rot = df_rot > 0 ? -df_rot % (2*Math::PI) : df_rot
+    df_scale = (@scale_point-@center).norm.abs / 40.0
+    puts 180.0*df_rot/Math::PI
+    rot_points = get_active_points().reject{|p| [@scale_point.object_id,@center.object_id].include?(p.object_id)}
+    rot_points.each do |p|
+      p.rot!(@center,df_rot)
+      # p.scale_from!(@center,df_scale)
+    end
+    @last_scale_point.set_pos(*@scale_point.to_a)
+  end
+  
   def get_balance_point
     points = get_dynamic_points()
     return nil unless points.length>0
@@ -129,5 +151,7 @@ class GosuComposition < GosuComponent
   def get_snap_point
     get_active_points().reject{|p| !p.draw?}.find{|p| p.snap_mode?}
   end
+
+
 
 end

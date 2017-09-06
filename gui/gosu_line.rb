@@ -34,6 +34,7 @@ class GosuLine < GosuComposition
     return unless @draw
     update_deleted()
     update_shift()
+    update_rot_scale()           
     draw(x,y)
     get_active_points().each{|p| p.update(x,y)}
   end

@@ -170,6 +170,14 @@ class Point < GosuComponent
     res
   end
 
+  def scale_from(center,scalar)
+    center + (self-center).scale(scalar)
+  end
+
+  def scale_from!(center,scalar)
+    set_pos(*scale_from(center,scalar).to_a)
+  end
+
   def angle_between(other)
     a_1 = Math.atan2(@y, @x)
     a_2 = Math.atan2(other.y, other.x)
@@ -179,7 +187,8 @@ class Point < GosuComponent
     elsif diff > Math::PI
       diff = -Math::PI+(diff.abs-Math::PI)
     end
-    diff % (2*Math::PI)
+    -sign(diff)*(diff % (2*Math::PI))
+    # diff % (2*Math::PI)
   end
 
   def angle_offset
@@ -197,6 +206,10 @@ class Point < GosuComponent
     sin = Math.sin(angle)
     p = Point.new(v.x*cos+v.y*sin,-v.x*sin + v.y*cos)
     p+other
+  end
+
+  def rot!(other, angle)
+    set_pos(*rot(other,angle).to_a)
   end
 
 end

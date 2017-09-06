@@ -72,6 +72,7 @@ class GosuPolygon < GosuComposition
       update_deleted()
     end
     update_shift()
+    update_rot_scale()           
     get_active_points().each{|p| p.update(x,y)}
     @polygon = Bezier::Curve.new(@start.to_a,*@points.map{|p| p.to_a},@end.to_a)
     last = @start.to_a
