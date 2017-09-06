@@ -1,45 +1,70 @@
-int targetTemp = 25;
+#include <StaticThreadController.h>
+#include <Thread.h>
+#include <ThreadController.h>
+#include <AccelStepper.h>
+#include "SevSeg.h"
+
+#define DEBUG false
+
+SevSeg sevseg;
+int sevSegLast = 0;
+
+#define MOTOR_DIR 2
+#define MOTOR_STP 3
+#define MOTOR_MS3 4
+#define MOTOR_MS2 5
+#define MOTOR_MS1 6
+#define MOTOR_EN  7
+#define MOTOR_STEPS_PER_MM 95
+AccelStepper mystepper(AccelStepper::DRIVER, MOTOR_STP, MOTOR_DIR);
+
+#define ROTARY_INTERVAL 10
+#define ROTARY_A 52
+#define ROTARY_B 50
+#define ROTARY_BUTTON 48
+#define ROTARY_DELAY 2000
+
+int rotaryValue = 20;
+int rotaryState;
+int rotaryLastState;
+int lastChange = 0;
+
+int targetTemp = rotaryValue * ROTARY_INTERVAL;
+
+ThreadController controller = ThreadController();
 
 void setup() {
+  Serial.begin(9600);
   setupRotary();
   setupSevseg();
   setupExtruder();
-  setupTemp();
+
+  Thread tempThread = setupTemp();
+  controller.add(&tempThread);
 }
 
-int count = 0;
-
 void loop() {
-  count++;
   loopRotary();
   loopSevseg();
   loopExtruder();
-  if(count >= 100) {
-    count = 0;
-    loopTemp();
-  }
+  controller.run();
 }
-
 
 
 ////////////////// ROTARY /////////////////
 
-#define ROTARY_A 52
-#define ROTARY_B 50
-
-int rotaryValue = 25;
-int rotaryState;
-int rotaryLastState;
-
 void setupRotary() {
   pinMode (ROTARY_A, INPUT);
   pinMode (ROTARY_B, INPUT);
-       
-  Serial.begin (9600);
+  pinMode(ROTARY_BUTTON, INPUT);
+
+  digitalWrite(ROTARY_BUTTON, HIGH);
+
   rotaryLastState = digitalRead(ROTARY_A);  
 }
 
 void loopRotary() {
+  lastChange++;
   rotaryState = digitalRead(ROTARY_A); // Reads the "current" state of the outputA
   if (rotaryState != rotaryLastState){     
     if (digitalRead(ROTARY_B) != rotaryState) { 
@@ -47,28 +72,36 @@ void loopRotary() {
     } else {
       rotaryValue --;
     }
-    Serial.print("Rotary Value: ");
-    Serial.println(rotaryValue);
 
-    sevsegPrint(rotaryValue);
-    targetTemp = rotaryValue;
+    targetTemp = rotaryValue * ROTARY_INTERVAL;
+
+    rotaryDisplayTarget();
   } 
   rotaryLastState = rotaryState;
+  
+  if(digitalRead(ROTARY_BUTTON) == 0) {
+    rotaryDisplayTarget();  
+  }
+}
+
+void rotaryDisplayTarget() {
+  lastChange = 0;
+  if(DEBUG) {
+    Serial.print("Rotary: ");
+    Serial.println(targetTemp);
+  }
+
+  sevsegPrint(targetTemp);
 }
 
 
 
 ////////////////// SEVSEG /////////////////
 
-#include "SevSeg.h"
-SevSeg sevseg;
-
-int sevSegLast = 0;
-
 void setupSevseg() {
   byte numDigits = 3;
   byte digitPins[] = {23, 24, 25};
-  byte segmentPins[] = {40, 36, 30, 32, 34, 38, 28};
+  byte segmentPins[] = {32, 28, 36, 38, 40, 30, 34};
   bool resistorsOnSegments = false; // 'false' means resistors are on digit pins
   byte hardwareConfig = COMMON_CATHODE; // See README.md for options
   bool updateWithDelays = false; // Default. Recommended
@@ -79,8 +112,8 @@ void setupSevseg() {
 }
 
 void loopSevseg() {
-  sevseg.setNumber(sevSegLast);
   sevseg.refreshDisplay();
+  sevseg.setNumber(sevSegLast);
 }
 
 void sevsegPrint(int value) {
@@ -93,19 +126,28 @@ void sevsegPrint(int value) {
 #define THERMISTORPIN A0
 #define THERMISTORNOMINAL 100000
 #define TEMPERATURENOMINAL 25   
-#define NUMSAMPLES 5
+#define NUMSAMPLES 3
 #define BCOEFFICIENT 3950
 #define SERIESRESISTOR 10000
 
 #define RELAY_PIN 8
+#define LED_PIN 53
 
 uint16_t samples[NUMSAMPLES];
 
-void setupTemp() {
+Thread setupTemp() {
   analogReference(EXTERNAL);
 
   pinMode(RELAY_PIN, OUTPUT);    // Output mode to drive relay
   digitalWrite(RELAY_PIN, LOW);  // make sure it is off to start
+
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  Thread myThread = Thread();
+  myThread.setInterval(2000);
+  myThread.onRun(loopTemp);
+  return myThread;
 }
   
 void loopTemp() {
@@ -135,86 +177,57 @@ void loopTemp() {
   steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
   steinhart = 1.0 / steinhart;                 // Invert
   steinhart -= 273.15;                         // convert to C
+
+  if(DEBUG) {
+    Serial.print("Temp  : ");
+    Serial.println((int)steinhart);
+  }
   
-  Serial.print("Temperature: ");
-  Serial.println((int)steinhart);
+  if(lastChange > ROTARY_DELAY) {
+    int temp = (int)steinhart;
+    sevsegPrint(temp);
+    lastChange = 0;
+  }
 
-  sevsegPrint((int)steinhart);
-
-  if(steinhart < targetTemp - 5) {
-      digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("on");
+  if(steinhart <= 0) {
+    digitalWrite(RELAY_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+    if(DEBUG) { Serial.println("Temp measurement error"); }
+  } else if(steinhart < targetTemp - 5) {
+    digitalWrite(RELAY_PIN, HIGH);
+    digitalWrite(LED_PIN, HIGH);
+    if(DEBUG) { Serial.println("on"); }
   } else {
-      digitalWrite(RELAY_PIN, LOW);
-      Serial.println("off");
+    digitalWrite(RELAY_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+    if(DEBUG) { Serial.println("off"); }
   }
 }
 
 
 ////////////// EXTRUDER //////////////
 
-#define MOTOR_STP 3
-#define MOTOR_DIR 2
-#define MOTOR_MS1 6
-#define MOTOR_MS2 5
-#define MOTOR_MS3 4
-#define MOTOR_EN  7
-
-
-int x;
-int y;
-int state;
-
 void setupExtruder() {
-  pinMode(MOTOR_STP, OUTPUT);
-  pinMode(MOTOR_DIR, OUTPUT);
   pinMode(MOTOR_MS1, OUTPUT);
   pinMode(MOTOR_MS2, OUTPUT);
   pinMode(MOTOR_MS3, OUTPUT);
-  pinMode(MOTOR_EN, OUTPUT);
-  resetBEDPins();
-}
 
-void resetBEDPins()
-{
-  digitalWrite(MOTOR_STP, LOW);
-  digitalWrite(MOTOR_DIR, LOW);
-  digitalWrite(MOTOR_MS1, LOW);
-  digitalWrite(MOTOR_MS2, LOW);
-  digitalWrite(MOTOR_MS3, LOW);
-  digitalWrite(MOTOR_EN, HIGH);
+  digitalWrite(MOTOR_MS1, HIGH);
+  digitalWrite(MOTOR_MS2, HIGH);
+  digitalWrite(MOTOR_MS3, HIGH);
+
+  double baseSpeed = 158.3333333333333333333;
+  double baseDistance = 95 * 20;
+  double quot = 8;
+
+  mystepper.setMaxSpeed(baseSpeed / quot); // steps per second
+  mystepper.setAcceleration(1000);  // steps per second per second
+  mystepper.setCurrentPosition(0);
+
+  mystepper.move(baseDistance / quot * 40);
 }
 
 void loopExtruder() {
-  digitalWrite(MOTOR_EN, LOW);
-  //extruderStepForward(1);
-  extruderSmallStep();
-}
-
-void extruderStepForward(int steps) {
-  Serial.println(steps);
-  digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
-  for(x= 0; x<steps; x++)  //Loop the forward stepping enough times for motion to be visible
-  {
-    digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
-    delay(1);
-    digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
-    delay(1);
-  }  
-}
-
-
-void extruderSmallStep() {
-  digitalWrite(MOTOR_DIR, LOW); //Pull direction pin low to move "forward"
-  digitalWrite(MOTOR_MS1, HIGH); //Pull MS1,MS2, and MS3 high to set logic to 1/16th microstep resolution
-  digitalWrite(MOTOR_MS2, HIGH);
-  digitalWrite(MOTOR_MS3, HIGH);
-  for(x= 1; x<2; x++)  //Loop the forward stepping enough times for motion to be visible
-  {
-    digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
-    delay(1);
-    digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
-    delay(1);
-  }
+  mystepper.run();
 }
 
