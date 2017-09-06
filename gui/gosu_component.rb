@@ -53,6 +53,7 @@ class GosuComponent
   def doubleclick_action(id,pos)
     puts "#{self.class}: #{id}"  
   end
+  
   def button_up_action(id,pos)
     puts "#{self.class}: #{id} off"
     case id

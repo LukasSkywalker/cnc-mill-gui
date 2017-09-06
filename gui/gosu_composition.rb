@@ -5,9 +5,11 @@ class GosuComposition < GosuComponent
     @edit_mode = true
     @center = center
     @center.color = Gosu::Color::BLUE
+    @center.can_connect = false
     @scale_point = scale_point
     @scale_point.color = Gosu::Color::GREEN
     @scale_point.draw = false
+    @scale_point.can_connect = false
     @last_center = Point.new(*center.to_a)
     @active_controlpoint = nil
     @shift_mode = false
@@ -59,7 +61,7 @@ class GosuComposition < GosuComponent
   end
 
   def update_shift
-    last_updated = get_active_points().find{|p| (p <=> @last_modified) > -1}
+    last_updated = get_active_points().find{|p| (@last_modified.nil? ? 1 : p <=> @last_modified) > -1}
     if last_updated == @center
       shift = (@center - @last_center)
       return false if shift.norm == 0
@@ -114,8 +116,9 @@ class GosuComposition < GosuComponent
   end
 
   def nearest_point_in_range(point, radius)
-    points = get_active_points().find_all{ |p| p.distance_to(point) <= radius }
-    points.sort{|p,q| p.distance_to(point) <=> q.distance_to(point)}
+    snappable_points = get_active_points().reject{|p| !p.can_connect}
+    points = snappable_points.find_all{ |p| p.distance_to(point) <= radius }
+    points = points.sort{|p,q| p.distance_to(point) <=> q.distance_to(point)}
     points.first
   end
 
@@ -123,19 +126,8 @@ class GosuComposition < GosuComponent
     get_active_points().reject{|p| !p.draw?}.any?{|p| p.snap_mode?}
   end
 
-
   def get_snap_point
     get_active_points().reject{|p| !p.draw?}.find{|p| p.snap_mode?}
-  end
-
-  def handle_point_snapping(snap_candidate, snap)
-    return unless snap_candidate
-    return unless snap
-    # if click_off
-      # @last_click_propagation.connect_point(snap_candidate)
-    # else
-      snap.set_pos(*snap_candidate.to_a)
-    # end
   end
 
 end

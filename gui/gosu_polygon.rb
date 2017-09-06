@@ -45,6 +45,7 @@ class GosuPolygon < GosuComposition
       @end.color = Gosu::Color::RED
       @next = :control
     when :control
+      control_point.can_connect = false
       add_control_point(control_point)
     end
   end

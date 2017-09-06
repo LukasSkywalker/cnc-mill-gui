@@ -9,3 +9,4 @@ output.pdf
 *.pdf
 linecount.*
 .history
+.byebug_history

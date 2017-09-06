@@ -1,8 +1,10 @@
 require_relative 'gosu_component'
 
 class Point < GosuComponent
-  attr_accessor :color, :size
+  attr_accessor :color, :size, :can_connect
   attr_reader :x, :y,:double_clicked
+
+  COLOR_SNAPPED = Gosu::Color::YELLOW
 
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
     super('Point',*get_border(x,y,size))
@@ -10,6 +12,8 @@ class Point < GosuComponent
     set_pos(x,y)
     @color = color
     @connected_point = nil
+    @snap_candidate = nil
+    @can_connect = true
   end
 
   def set_size_color(size,color)
@@ -17,37 +21,63 @@ class Point < GosuComponent
     @color=color
   end
 
+
+  def button_up_action(id,pos)
+    super
+    return unless @can_connect    
+    if @delete_request && @snap_candidate
+      disconnect_points()
+      @delete_request = false
+    end
+    if @snap_candidate && distance_to(@snap_candidate) < 2*@size && id == GosuComponent::LEFT
+      connect_point(@snap_candidate) if @snap_candidate
+    end
+  end
+
   def connect_point(point, insert=true)
     raise 'point has to be a Point' unless point.is_a?(Point)
+    return if point.object_id == self.object_id 
     if @connected_point
       p = @connected_point
       @connected_point = point
       point.connect_point(p, false)      
     elsif insert
-      @connected_point = point.connect_point(self, false)
+      @connected_point = point
+      point.connect_point(self, false)
     else
       @connected_point = point
     end
-    point
   end
 
-  def disconnect_points(initiator=nil)
-    return unless @connected_point || self==initiator
-    @connected_point.disconnect_points(initiator.nil? ? self : initiator)
+  def disconnect_points
+    return unless @connected_point
+    p = @connected_point
     @connected_point = nil
+    p.disconnect_points()
   end
 
-  def update_connected(x,y,initiator)
-    return if self==initiator
-    @connected_point.update_connected(x,y,initiator)
-  end
-
-  def set_pos(x,y)
+  def update_connected(x,y,initiator=nil)
+    return if self.object_id==initiator.object_id
+    @connected_point.update_connected(x,y,initiator.nil? ? self : initiator)
     update_pos(x,y)
-    update_connected(x,y,self) if @connected_point
+  end
+
+  def set_snap_candidate(snap_candidate)
+    return unless @can_connect
+    @snap_candidate = snap_candidate
+    set_pos(*snap_candidate.to_a,true)
+  end
+
+  def set_pos(x,y, snap=false)
+    update_pos(x,y) if !snap_mode? || snap
+    update_connected(x,y) if @connected_point
   end
 
   def snap_mode?
+    return false unless @can_connect
+    if @snap_candidate
+      distance_to(@snap_candidate) < 2*@size
+    end
     active? && @state[:ctrl]
   end
  
@@ -70,7 +100,7 @@ class Point < GosuComponent
 
   def draw
     sz2 = @size/2.0
-    Gosu.draw_rect(@x-sz2,@y-sz2, @size,@size, @color)
+    Gosu.draw_rect(@x-sz2,@y-sz2, @size,@size, @connected_point ? COLOR_SNAPPED : @color)
   end
 
   def to_a
@@ -78,6 +108,7 @@ class Point < GosuComponent
   end
 
   def ==(other)
+    return unless other.is_a?(Point)
     @x==other.x && @y==other.y
   end
 

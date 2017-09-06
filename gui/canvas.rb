@@ -52,19 +52,27 @@ class Canvas < GosuComposition
     @last_click_propagation = @current_tool.onclick(id,state,pos) unless @current_tool.nil?
     self
   end
-
-  def get_possible_snaps(pos)
-    pt = Point.new(*pos)
-    snaps = @components.reduce([]){|mem,val| mem << val.nearest_point_in_range(pt,pt.size)}.reject{|p| p.nil? || !p.draw?}
-    snaps.sort{|p,q| p.distance_to(pt) <=> p.distance_to(pt)}
-  end
   
   def update(x,y)
     update_deleted()
     @components.each{|c| c.update(x,y)}
+    handle_point_snapping(x,y)
+  end
+  
+  def handle_point_snapping(x,y)
     pos = Point.new(x,y)
     snap = @components.find{|c| c.has_snap_point?}
-    handle_point_snapping(get_possible_snaps(pos).first,snap.get_snap_point()) if snap
+    return unless snap
+    snap = snap.get_snap_point()
+    snap_candidate = get_possible_snaps(pos).reject{|cand| cand.object_id == snap.object_id }.first
+    return unless snap_candidate
+    snap.set_snap_candidate(snap_candidate)
+  end
+
+  def get_possible_snaps(pos)
+    pt = Point.new(*pos)    
+    snaps = @components.reduce([]){|mem,val| mem << val.nearest_point_in_range(pt,pt.size)}.reject{|p| p.nil? || !p.draw?}
+    snaps.sort{|p,q| p.distance_to(pt) <=> p.distance_to(pt)}
   end
 
   def update_deleted
