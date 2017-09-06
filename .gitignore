@@ -9,3 +9,5 @@ output.pdf
 *.pdf
 linecount.*
 .history
+
+tmp

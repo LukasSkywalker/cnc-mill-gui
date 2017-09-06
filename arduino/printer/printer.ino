@@ -1,14 +1,35 @@
 #include <StaticThreadController.h>
 #include <Thread.h>
 #include <ThreadController.h>
+#include <AccelStepper.h>
+#include "SevSeg.h"
 
-#define TEMP_INTERVAL 2
-#define DEBUG true
+#define DEBUG false
 
-int targetTemp = 25;
+SevSeg sevseg;
+int sevSegLast = 0;
 
-long sysLastMillis = 0;
-long sysLoops = 0;
+#define MOTOR_DIR 2
+#define MOTOR_STP 3
+#define MOTOR_MS3 4
+#define MOTOR_MS2 5
+#define MOTOR_MS1 6
+#define MOTOR_EN  7
+#define MOTOR_STEPS_PER_MM 95
+AccelStepper mystepper(AccelStepper::DRIVER, MOTOR_STP, MOTOR_DIR);
+
+#define ROTARY_INTERVAL 10
+#define ROTARY_A 52
+#define ROTARY_B 50
+#define ROTARY_BUTTON 48
+#define ROTARY_DELAY 2000
+
+int rotaryValue = 20;
+int rotaryState;
+int rotaryLastState;
+int lastChange = 0;
+
+int targetTemp = rotaryValue * ROTARY_INTERVAL;
 
 ThreadController controller = ThreadController();
 
@@ -16,41 +37,21 @@ void setup() {
   Serial.begin(9600);
   setupRotary();
   setupSevseg();
+  setupExtruder();
+
   Thread tempThread = setupTemp();
-  Thread extruderThread = setupExtruder();
   controller.add(&tempThread);
-  controller.add(&extruderThread);
 }
 
 void loop() {
-  long sysCurrentMillis = millis();
-  sysLoops++;
-
-  if(sysCurrentMillis - sysLastMillis > 1000){
-    Serial.println(sysLoops);
-   
-    sysLastMillis = sysCurrentMillis;
-    sysLoops = 0;
-  }
-  
   loopRotary();
   loopSevseg();
+  loopExtruder();
   controller.run();
 }
 
 
-
 ////////////////// ROTARY /////////////////
-
-#define ROTARY_A 52
-#define ROTARY_B 50
-#define ROTARY_BUTTON 48
-#define ROTARY_DELAY 2000
-
-int rotaryValue = 2;
-int rotaryState;
-int rotaryLastState;
-int lastChange = 0;
 
 void setupRotary() {
   pinMode (ROTARY_A, INPUT);
@@ -72,7 +73,7 @@ void loopRotary() {
       rotaryValue --;
     }
 
-    targetTemp = rotaryValue * 10;
+    targetTemp = rotaryValue * ROTARY_INTERVAL;
 
     rotaryDisplayTarget();
   } 
@@ -96,11 +97,6 @@ void rotaryDisplayTarget() {
 
 
 ////////////////// SEVSEG /////////////////
-
-#include "SevSeg.h"
-SevSeg sevseg;
-
-int sevSegLast = 0;
 
 void setupSevseg() {
   byte numDigits = 3;
@@ -211,67 +207,27 @@ void loopTemp() {
 
 ////////////// EXTRUDER //////////////
 
-#define MOTOR_DIR 2
-#define MOTOR_STP 3
-#define MOTOR_MS3 4
-#define MOTOR_MS2 5
-#define MOTOR_MS1 6
-#define MOTOR_EN  7
-
-
-int x;
-int y;
-int state;
-
-Thread setupExtruder() {
-  pinMode(MOTOR_STP, OUTPUT);
-  pinMode(MOTOR_DIR, OUTPUT);
+void setupExtruder() {
   pinMode(MOTOR_MS1, OUTPUT);
   pinMode(MOTOR_MS2, OUTPUT);
   pinMode(MOTOR_MS3, OUTPUT);
-  pinMode(MOTOR_EN, OUTPUT);
-  resetBEDPins();
 
-  extruderSmallStepPrepare();
-
-  Thread myThread = Thread();
-  myThread.setInterval(10);
-  myThread.onRun(loopExtruder);
-  return myThread;
-}
-
-void resetBEDPins()
-{
-  digitalWrite(MOTOR_STP, LOW);
-  digitalWrite(MOTOR_DIR, LOW);
-  digitalWrite(MOTOR_MS1, LOW);
-  digitalWrite(MOTOR_MS2, LOW);
-  digitalWrite(MOTOR_MS3, LOW);
-  digitalWrite(MOTOR_EN, HIGH);
-}
-
-void loopExtruder() {
-  extruderSmallStep();
-}
-
-void extruderSmallStepPrepare() {
-  digitalWrite(MOTOR_DIR, HIGH); //Pull direction pin low to move "forward"
-  digitalWrite(MOTOR_MS1, HIGH); //Pull MS1,MS2, and MS3 high to set logic to 1/16th microstep resolution
+  digitalWrite(MOTOR_MS1, HIGH);
   digitalWrite(MOTOR_MS2, HIGH);
   digitalWrite(MOTOR_MS3, HIGH);
 
-  digitalWrite(MOTOR_EN, LOW);
+  double baseSpeed = 158.3333333333333333333;
+  double baseDistance = 95 * 20;
+  double quot = 8;
+
+  mystepper.setMaxSpeed(baseSpeed / quot); // steps per second
+  mystepper.setAcceleration(1000);  // steps per second per second
+  mystepper.setCurrentPosition(0);
+
+  mystepper.move(baseDistance / quot * 40);
 }
 
-int extruderCounter = 0;
-
-void extruderSmallStep() {
-  extruderCounter++;
-  //if(extruderCounter < 5) { return; }
-  extruderCounter = 0;
-  digitalWrite(MOTOR_STP,HIGH); //Trigger one step forward
-  delay(1);
-  digitalWrite(MOTOR_STP,LOW); //Pull step pin low so it can be triggered again
-  delay(1);
+void loopExtruder() {
+  mystepper.run();
 }
 
