@@ -6,6 +6,7 @@ require_relative 'picture'
 require 'byebug'
 
 class Canvas < GosuComposition
+  attr_accessor :picture_visibility
   def initialize(gosu_window,left=0,top=0,right=0,bottom=0)
     super('Canvas')
     @left,@bottom,@right,@top = left,bottom,right,top
@@ -13,12 +14,14 @@ class Canvas < GosuComposition
     @current_tool = nil
     @window = gosu_window
     @components = []
+    @picture_visibility = true
+    @pictures = []
   end
 
   def add_picture(picture)
     raise 'not a pictrue' unless picture.is_a?(Picture)
     picture.set_shift(@left,@top)
-    @components << picture  
+    @pictures << picture
   end
 
   def set_tool_class(new_tool_class)
@@ -35,16 +38,20 @@ class Canvas < GosuComposition
     true
   end
 
+  def compositions
+    @picture_visibility ? @components.concat(@pictures) : @components
+  end
+
   def onclick(id,state,pos)
     return unless overlay?(*pos)
     return unless @current_tool_class
     add_new_tool = @current_tool.nil? || !@current_tool.active?
     add_new_tool &&= id==GosuComponent::LEFT&&state==DOWN
-    if t = @components.sort().reverse().find{|c| c.overlay?(*pos)}
+    if t = compositions.sort().reverse().find{|c| c.overlay?(*pos)}
       @current_tool = t
       add_new_tool = false
     end
-    if add_new_tool
+    if add_new_tool && @current_tool_class!=NilClass
       puts "canvas: new component: #{@current_tool_class}"
       @current_tool = @current_tool_class.new(Point.new(*pos), Point.new(*pos))
       @components << @current_tool
@@ -56,6 +63,7 @@ class Canvas < GosuComposition
   def update(x,y)
     update_deleted()
     @components.each{|c| c.update(x,y)}
+    @pictures.each{|c| c.update(x,y)} if @picture_visibility
     handle_point_snapping(x,y)
   end
   

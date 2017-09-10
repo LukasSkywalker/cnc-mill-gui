@@ -76,7 +76,7 @@ class GosuComposition < GosuComponent
       new_pos = get_balance_point()
       @center.set_pos(*new_pos.to_a) unless new_pos.nil?
       if @center && @scale_point && !@scale_point.active?
-        @scale_point.set_pos(*(@center+Point.new(40,0)).to_a)
+        @scale_point.scale_from!(@center,farest_point_from(@center)/2.0)
         @last_scale_point.set_pos(*@scale_point.to_a)
         @scale_point.draw = true
       end
@@ -90,14 +90,20 @@ class GosuComposition < GosuComponent
     return if @last_scale_point==@scale_point
     df_rot = (@last_scale_point-@center).angle_between(@scale_point-@center)
     df_rot = df_rot > 0 ? -df_rot % (2*Math::PI) : df_rot
-    df_scale = (@scale_point-@center).norm.abs / 40.0
-    puts 180.0*df_rot/Math::PI
+    df_scale = 2*(@scale_point-@center).norm.abs
     rot_points = get_active_points().reject{|p| [@scale_point.object_id,@center.object_id].include?(p.object_id)}
     rot_points.each do |p|
+      p.scale_from!(@center,df_scale)
       p.rot!(@center,df_rot)
-      # p.scale_from!(@center,df_scale)
     end
     @last_scale_point.set_pos(*@scale_point.to_a)
+  end
+
+  def farest_point_from(point)
+    get_active_points().reduce(0) do |m,p|
+      d = p.distance_to(point);
+      m < d ? d : m
+    end
   end
   
   def get_balance_point

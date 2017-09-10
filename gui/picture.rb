@@ -10,10 +10,43 @@ class Picture < GosuComposition
       :right_bottom=>Point.new(@image.width,@image.height)}
   end
 
+  def set_pos(left_top, right_bottom, lock_proportion = false)
+    complete_positions(left_top, right_bottom)
+    @points[:left_top].set_pos(*left_top.to_a)
+    @points[:right_bottom].set_pos(*right_bottom.to_a)
+    update_proportion() if lock_proportion
+    self
+  end
+
+  def complete_positions(left_top,right_bottom)
+    ratio =@image.width / @image.height.to_f
+    if left_top.x.nan? || right_bottom.x.nan?
+      wdith = ratio*(right_bottom.y-left_top.y)
+      left_top.set_pos(right_bottom.x-wdith,left_top.y) if left_top.x.nan?
+      right_bottom.set_pos(left_top.x+wdith,right_bottom.y) if right_bottom.x.nan?
+    elsif left_top.y.nan? || right_bottom.y.nan?
+      height = (right_bottom.x-left_top.x)/ratio
+      left_top.set_pos(left_top.x,right_bottom.y-height) if left_top.y.nan?
+      right_bottom.set_pos(right_bottom.x,left_top.y+height) if right_bottom.y.nan?
+    end
+  end
+
+  def update_proportion
+    diff = @points[:right_bottom]-@points[:left_top]
+    ratio = @image.width / @image.height.to_f
+    return if ratio == (diff.x / diff.y)
+    if (diff.x / diff.y).abs > ratio
+      @points[:right_bottom].set_pos(@points[:right_bottom].x,diff.y/ratio)
+    else
+      @points[:right_bottom].set_pos(diff.y*ratio,@points[:right_bottom].y)
+    end
+  end
+
   def set_shift(x,y)
     @points.each do |k,point|
       point.shift(x,y)
     end
+    self
   end
 
   def update(x,y)
@@ -36,7 +69,7 @@ class Picture < GosuComposition
   end
 
   def get_dynamic_points
-    [@points[:left_top], @center,@scale_point]
+    [@points[:left_top], @center]
   end
 
 

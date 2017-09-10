@@ -11,7 +11,7 @@ class GosuArc < GosuComposition
   end
 
   def get_instance_points
-    [@start,@end,@center,@scale_point,@radius_control].reject(&:nil?).sort().reverse()
+    [@start,@end,@center,@scale_point].reject(&:nil?).sort().reverse()
   end
 
   def get_dynamic_points
@@ -24,12 +24,10 @@ class GosuArc < GosuComposition
         @active_controlpoint = get_active_points().find{|p| p.overlay?(*pos)}
       elsif id == GosuComponent::LEFT
         if @start.nil?
-          @radius_control = Point.new(*pos)
           @start = Point.new(*pos,Gosu::Color::GREEN)
           @active_controlpoint = @end = Point.new(*pos,Gosu::Color::RED)
         elsif @center.nil?
           @active_controlpoint = @center = Point.new(*pos)
-          update_radius_control(@center)
           @last_center = Point.new(*@center.to_a)
           # finish()
         end
@@ -81,16 +79,15 @@ class GosuArc < GosuComposition
     update_shift()
     r = radius(@center)
     update_radius(@center,r)
-    update_radius_control(@center)
     r
   end
 
-  def radius(center)
-    return 0 unless @start
-    if @radius_control
-      (@radius_control-center).norm
+  def radius(center=@center)
+    return 0 unless @start && center
+    if @center
+      center.distance_to(@scale_point)*2.0
     else
-      (@start-center).norm
+      center.distance_to(@start)
     end
   end
 
@@ -98,21 +95,9 @@ class GosuArc < GosuComposition
     @start.set_pos(*(center + (@start - center).scale!(r)).to_a)
     @end.set_pos(*(center + (@end - center).scale!(r)).to_a)    
   end
-
-  def update_radius_control(center)
-    return unless @radius_control
-    start_v = @start-center
-    a2 = start_v.angle_between(@end-center).abs / 2.0
-    if a2==0
-      p = center + (center-@start)
-    else
-      p = @start.rot(center,-a2)
-    end
-    @radius_control.set_pos(p.x,p.y)
-  end
   
   def update_deleted
-    [@start,@center,@end,@scale_point,@radius_control].each do |p|
+    [@start,@center,@end,@scale_point].each do |p|
       @delete_request = true if p && p.delete_request
     end
   end

@@ -40,10 +40,12 @@ class Button < GosuComponent
   def activate
     @on = true
     @selfautocracy_request = true if @on
+    self
   end
   
   def deactivate
     @on = false
+    self
   end
   
   def update(x,y)
@@ -52,6 +54,7 @@ class Button < GosuComponent
   
   def draw
     Gosu.draw_rect(@x,@y, SIZE.first,SIZE.last, active? ? Gosu::Color::GREEN : Gosu::Color::RED,-999)
-    @font.draw(@text, @x+5,@y+5,1, 1.0, 1.0, Gosu::Color::WHITE)
+    scale = @text.length > 8 ? 8.0 / @text.length : 1.0
+    @font.draw(@text, @x+5,@y+5,1, scale, scale, active? ? Gosu::Color::BLACK : Gosu::Color::WHITE)
   end
 end

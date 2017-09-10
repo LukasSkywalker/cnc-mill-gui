@@ -9,7 +9,7 @@ class Point < GosuComponent
   def initialize(x, y, color=Gosu::Color::BLUE, size = 15.0)
     super('Point',*get_border(x,y,size))
     @size = size
-    set_pos(x,y)
+    set_pos(x.to_f,y.to_f)
     @color = color
     @connected_point = nil
     @snap_candidate = nil
@@ -82,8 +82,8 @@ class Point < GosuComponent
   end
  
   private def update_pos(x,y)
-    @x = x
-    @y = y
+    @x = x.to_f
+    @y = y.to_f
     @left,@top,@right,@bottom = get_border()
     @last_modified = Time.now    
   end
@@ -160,14 +160,12 @@ class Point < GosuComponent
   end
 
   def scale(scalar)
-    norm_point=normalize
-    norm_point*scalar
+    normalize()*scalar    
   end
 
   def scale!(scalar)
     normalize!
-    res = self*(scalar)
-    res
+    self*(scalar)
   end
 
   def scale_from(center,scalar)
@@ -176,6 +174,7 @@ class Point < GosuComponent
 
   def scale_from!(center,scalar)
     set_pos(*scale_from(center,scalar).to_a)
+    self
   end
 
   def angle_between(other)
