@@ -47,7 +47,8 @@ class GosuLine < GosuComposition
 
   def draw(x,y)
     return unless @points.length > 0
-    ppair = active?() ? @points.zip([*@points[1..-1],Point.new(x,y)]) : @points[0..-2].zip(@points[1..-1])
+    # ppair = active?() ? @points.zip([*@points[1..-1],Point.new(x,y)]) : @points[0..-2].zip(@points[1..-1])
+    ppair = @points.length < 2 ? @points.zip([*@points[1..-1],Point.new(x,y)]) : @points[0..-2].zip(@points[1..-1])
     ppair.each do |start,ende|
       Gosu.draw_line(start.x,start.y,Gosu::Color::GREEN,ende.x,ende.y, Gosu::Color::GREEN,-1)
     end

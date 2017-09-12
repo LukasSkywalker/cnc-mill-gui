@@ -91,23 +91,29 @@ class GosuPolygon < GosuComposition
     end
   end
 
-
   def get_balance_point
-    return nil unless @polygon
-    start = Point.new(0,0)
-    steps = 0
-    (0..1).step(10.0/get_path_length()).each do |p|
-      start += Point.new(*@polygon.point_on_curve(p).to_a)
-      steps += 1
+    # points = [@start,@end].concat(@points).reject(&:nil?)
+    # return nil unless points.length>0
+    # points.reduce(Point.new(0,0)){|memo,obj| memo += obj}/points.length.to_f
+    return nil unless @start && @end
+    if @polygon.nil?
+      @start + ((@end-@start)/2)
+    else
+      start = Point.new(0,0)
+      steps = 0
+      (0..1).step(10.0/get_path_length()).each do |p|
+        start += Point.new(*@polygon.point_on_curve(p).to_a)
+        steps += 1
+      end
+      start/steps
     end
-    start/steps
   end
 
   def get_path_length
     length = 0
     last = @start
     @points.each do |p|
-      length += (p-last).norm
+      length += last.distance_to(p)
       last = p
     end
     length.to_f

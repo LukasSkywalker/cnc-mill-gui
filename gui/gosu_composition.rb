@@ -8,7 +8,6 @@ class GosuComposition < GosuComponent
     @center.can_connect = false
     @scale_point = scale_point
     @scale_point.color = Gosu::Color::RED
-    @scale_point.draw = false
     @scale_point.name = 'Scale'
     @scale_point.can_connect = false
     @last_center = Point.new(*center.to_a)
@@ -16,6 +15,7 @@ class GosuComposition < GosuComponent
     @active_controlpoint = nil
     @shift_mode = false
     @last_click_propagation = nil
+    @update_flags = nil
   end
 
   def click_action(id,pos)
@@ -64,13 +64,16 @@ class GosuComposition < GosuComponent
 
   def update_shift
     last_updated = get_active_points().find{|p| (@last_modified.nil? ? 1 : p <=> @last_modified) > -1}
+    @update_flags = nil
     if last_updated == @center
+      @update_flags = :shift
       shift = (@center - @last_center)
       return false if shift.norm == 0
       shift = shift.to_a
       get_active_points().each do |p| 
         p.shift(*shift) unless p.object_id==@center.object_id
       end
+      @last_scale_point.set_pos(*@scale_point.to_a) if @scale_point
     else
       @last_modified = last_updated
       new_pos = get_balance_point()
@@ -87,13 +90,15 @@ class GosuComposition < GosuComponent
 
   def update_rot_scale
     return unless @scale_point
-    return if @last_scale_point==@scale_point
+    return if @update_flags == :shift
+    return if  @last_scale_point.nan? || @last_scale_point==@scale_point
     df_rot = (@last_scale_point-@center).angle_between(@scale_point-@center)
     df_rot = df_rot > 0 ? -df_rot % (2*Math::PI) : df_rot
-    df_scale = 2*(@scale_point-@center).norm.abs
+    df_scale = (@scale_point-@center).norm.abs / (@last_scale_point-@center).norm.abs
     rot_points = get_active_points().reject{|p| [@scale_point.object_id,@center.object_id].include?(p.object_id)}
     rot_points.each do |p|
-      p.scale_from!(@center,df_scale)
+      dist = p.distance_to(@center)
+      p.scale_from!(@center,df_scale*dist)
       p.rot!(@center,df_rot)
     end
     @last_scale_point.set_pos(*@scale_point.to_a)

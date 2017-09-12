@@ -48,7 +48,7 @@ class GosuArc < GosuComposition
     update_deleted()
     draw(x,y)
     update_control_points()
-    update_rot_scale()           
+    update_rot_scale()    
     get_active_points().each{|p| p.update(x,y)}
   end
   
@@ -84,11 +84,7 @@ class GosuArc < GosuComposition
 
   def radius(center=@center)
     return 0 unless @start && center
-    if @center
-      center.distance_to(@scale_point)*2.0
-    else
-      center.distance_to(@start)
-    end
+    center.distance_to(@start > @end ? @end : @start)
   end
 
   def update_radius(center,r)

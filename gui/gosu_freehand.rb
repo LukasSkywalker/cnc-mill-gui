@@ -6,7 +6,6 @@ class GosuFreehand < GosuComposition
   MIN_POINT_DIFFERENC = 5
   def initialize(center_point, scale_point)
     super('Freehand',center_point, scale_point)
-    @scale_point.draw = false
     @points = []
     @last_modified = Time.new(0)
   end
@@ -39,6 +38,7 @@ class GosuFreehand < GosuComposition
   def get_instance_points
     return [] unless @points.length > 0
     if @points.length > 1
+      # [@points.first,@points.last,@scale_point,@center]
       [@points.first,@points.last]
     else
       [@points.first]
@@ -110,5 +110,10 @@ class GosuFreehand < GosuComposition
     @delete_request = true if !active? && @points.length<=1
     to_del.length>0
   end
+
+  # def get_balance_point
+  #   return nil unless @points.length>0
+  #   @points.reduce(Point.new(0,0)){|memo,obj| memo += obj}/@points.length.to_f
+  # end
 
 end

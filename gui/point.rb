@@ -21,6 +21,9 @@ class Point < GosuComponent
     @color=color
   end
 
+  def nan?
+    @x.nan? ||@y.nan?
+  end
 
   def button_up_action(id,pos)
     super
